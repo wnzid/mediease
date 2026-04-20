@@ -20,11 +20,15 @@ export function updateSupabaseSession(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({
-          request,
+        // Do NOT mutate the incoming request cookies. Only write cookie updates to the response.
+        // This prevents overwriting or clearing a valid incoming session on public routes.
+        cookiesToSet.forEach(({ name, value, options }) => {
+          try {
+            response.cookies.set(name, value, options);
+          } catch (err) {
+            // swallow to avoid crashing middleware; response cookie set may fail in some environments
+          }
         });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       },
     },
   });
