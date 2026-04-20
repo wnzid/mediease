@@ -4,7 +4,6 @@ import { authRoutes, publicRoutes, getRoleRedirect, resolveRoleFromPath } from "
 import { updateSupabaseSession } from "@/lib/supabase/middleware";
 
 const ROLE_COOKIE = "mediease-role";
-const DEMO_SESSION_COOKIE = "mediease-demo-session";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -14,8 +13,16 @@ export async function middleware(request: NextRequest) {
 
   const { response, userId } = await updateSupabaseSession(request);
   const roleCookie = request.cookies.get(ROLE_COOKIE)?.value;
-  const hasDemoSession = Boolean(request.cookies.get(DEMO_SESSION_COOKIE)?.value);
-  const isAuthenticated = Boolean(userId || hasDemoSession || roleCookie);
+  const isAuthenticated = Boolean(userId || roleCookie);
+
+  // Special-case: do NOT clear or downgrade authenticated users on the public homepage.
+  // If a valid role cookie exists, redirect them to their role home instead of resetting session.
+  if (pathname === "/") {
+    if (isAuthenticated && roleCookie && roleCookie !== "guest") {
+      return NextResponse.redirect(new URL(getRoleRedirect(roleCookie as Parameters<typeof getRoleRedirect>[0]), request.url));
+    }
+    // Preserve the response without mutating or clearing cookies for anonymous visitors.
+  }
 
   if (isAuthRoute && isAuthenticated && roleCookie && roleCookie !== "guest") {
     return NextResponse.redirect(new URL(getRoleRedirect(roleCookie as Parameters<typeof getRoleRedirect>[0]), request.url));
