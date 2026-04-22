@@ -10,20 +10,19 @@ export default async function PatientBookPage({
 }) {
   const params = await searchParams;
   const doctorId = typeof params.doctor === "string" ? params.doctor : undefined;
-
   return (
     <>
       <div className="layout-container">
         {
-          (() => {
-            const dict = getDictionary();
+          (await (async () => {
+            const dict = await getDictionary();
             return (
               <PageHeader
                 title={serverT(dict, "patient.booking.title", "Book an appointment")}
                 description={serverT(dict, "patient.booking.description", "Move through a calm, validated booking flow with your summary visible from start to finish.")}
               />
             );
-          })()
+          })())
         }
         <div className="mt-6">
           <BookingWizard

@@ -3,14 +3,16 @@ import { AuthFormShell } from "@/features/auth/AuthFormShell";
 import { ResetPasswordForm } from "@/features/auth/forms";
 import { getDictionary, t } from "@/lib/i18n/server";
 
-const dict = getDictionary();
+export async function generateMetadata() {
+  const dict = await getDictionary();
+  return buildMetadata({
+    title: t(dict, "auth.resetPage.title", "Set a new password"),
+    description: t(dict, "auth.resetPage.description", "Choose a new password for your MediEase account."),
+  });
+}
 
-export const metadata = buildMetadata({
-  title: t(dict, "auth.resetPage.title", "Set a new password"),
-  description: t(dict, "auth.resetPage.description", "Choose a new password for your MediEase account."),
-});
-
-export default function ResetPasswordPage() {
+export default async function ResetPasswordPage() {
+  const dict = await getDictionary();
   return (
     <AuthFormShell
       eyebrow={t(dict, "auth.resetPage.eyebrow", "Secure your account")}

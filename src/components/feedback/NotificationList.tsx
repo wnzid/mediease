@@ -6,14 +6,14 @@ import type { Notification } from "@/types/appointments";
 import { formatDate, formatTime } from "@/lib/formatting/date";
 import { getDictionary, t as serverT } from "@/lib/i18n/server";
 
-export function NotificationList({
+export async function NotificationList({
   items,
   title = "Notifications",
 }: {
   items: Notification[];
   title?: string;
 }) {
-  const dict = getDictionary();
+  const dict = await getDictionary();
   const headerTitle = title ?? serverT(dict, "patient.dashboard.recentUpdates.title", "Notifications");
 
   if (!items || items.length === 0) {

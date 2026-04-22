@@ -3,11 +3,11 @@ import lt from "./dictionaries/lt";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isSupportedLocale, Locale } from "./config";
 import { cookies } from "next/headers";
 
-export function getLocaleFromCookies(): Locale {
+export async function getLocaleFromCookies(): Promise<Locale> {
   try {
-    // `cookies()` may be typed differently across Next versions (sync or Promise).
-    // Coerce to `any` so we can call `.get()` safely at runtime.
-    const cookieStore: any = cookies();
+    // `cookies()` may be either sync or async depending on Next version.
+    // Awaiting is safe in both cases.
+    const cookieStore: any = await cookies();
     const cookieLocale = cookieStore?.get?.(LOCALE_COOKIE)?.value;
     if (isSupportedLocale(cookieLocale)) return cookieLocale as Locale;
   } catch (e) {
@@ -16,8 +16,8 @@ export function getLocaleFromCookies(): Locale {
   return DEFAULT_LOCALE;
 }
 
-export function getDictionary(locale?: string) {
-  const l = isSupportedLocale(locale) ? locale : getLocaleFromCookies();
+export async function getDictionary(locale?: string) {
+  const l = isSupportedLocale(locale) ? locale : await getLocaleFromCookies();
   return l === "lt" ? lt : en;
 }
 

@@ -585,6 +585,85 @@ export async function getUpcomingAppointmentForPatient(profileId: string): Promi
   return data ?? null;
 }
 
+// Resolve a profile id by email (case-insensitive, trimmed). Tries server client first, then service-role client as fallback.
+export async function resolveProfileIdByEmail(email: string): Promise<string | null> {
+  const userEmail = String(email ?? "").trim().toLowerCase();
+  if (!userEmail) return null;
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const { data } = await supabase.from("profiles").select("id").ilike("email", userEmail).maybeSingle();
+      if (data?.id) return data.id;
+    }
+  } catch (err) {
+    // fall through to service lookup
+  }
+
+  try {
+    const svc = createServiceSupabaseClient();
+    if (svc) {
+      const { data } = await svc.from("profiles").select("id").ilike("email", userEmail).maybeSingle();
+      if (data?.id) return data.id;
+    }
+  } catch (err) {}
+
+  return null;
+}
+
+// Convenience: fetch all appointments for a patient identified by email
+export async function getAppointmentsForPatientByEmail(email: string): Promise<Appointment[]> {
+  const id = await resolveProfileIdByEmail(email);
+  if (!id) return [] as Appointment[];
+  return await getAppointmentsForPatientByProfileId(id);
+}
+
+// Convenience: fetch nearest upcoming appointment for a patient identified by email
+export async function getUpcomingAppointmentForPatientByEmail(email: string): Promise<Appointment | null> {
+  const id = await resolveProfileIdByEmail(email);
+  if (!id) return null;
+  return await getUpcomingAppointmentForPatient(id);
+}
+
+// Compute next upcoming appointment using the same client-side rules used in the Appointments page.
+// This resolves profile id, fetches all appointments for the profile, and then filters/sorts in-memory
+// using Date parsing to ensure identical selection rules.
+export async function getNextUpcomingAppointmentForPatientByEmail(email: string): Promise<{ all: Appointment[]; upcoming: Appointment[]; next: Appointment | null } | null> {
+  const userEmail = String(email ?? "").trim().toLowerCase();
+  if (!userEmail) return null;
+
+  // Resolve profile id first
+  const profileId = await resolveProfileIdByEmail(userEmail);
+  if (!profileId) return { all: [], upcoming: [], next: null };
+
+  // Fetch all appointments for profile id using existing helper (service-role behavior baked in)
+  const all = await getAppointmentsForPatientByProfileId(profileId);
+
+  // Use identical logic as appointments page: upcoming = rows.filter(a => new Date(a.startsAt) >= now)
+  const now = new Date();
+  const upcoming = (all ?? []).filter((a) => new Date(a.startsAt) >= now).sort((x, y) => new Date(x.startsAt).getTime() - new Date(y.startsAt).getTime());
+
+  const next = upcoming.length ? upcoming[0] : null;
+
+  // Dev debug logs to help verify parity between pages
+  try {
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.debug("[getNextUpcomingAppointmentForPatientByEmail] resolvedEmail:", userEmail);
+      // eslint-disable-next-line no-console
+      console.debug("[getNextUpcomingAppointmentForPatientByEmail] profileId:", profileId);
+      // eslint-disable-next-line no-console
+      console.debug("[getNextUpcomingAppointmentForPatientByEmail] totalAppointments:", (all ?? []).length);
+      // eslint-disable-next-line no-console
+      console.debug("[getNextUpcomingAppointmentForPatientByEmail] upcomingCount:", upcoming.length);
+      // eslint-disable-next-line no-console
+      console.debug("[getNextUpcomingAppointmentForPatientByEmail] nextId:", next?.id ?? null, "nextStartsAt:", next?.startsAt ?? null);
+    }
+  } catch (err) {}
+
+  return { all: all ?? [], upcoming, next };
+}
+
 export async function getAppointmentsForPatientGrouped(profileId: string) {
   const all = await clientOrEmpty(async () => {
     const supabase = await createServerSupabaseClient();

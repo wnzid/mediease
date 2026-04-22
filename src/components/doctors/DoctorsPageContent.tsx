@@ -29,19 +29,16 @@ export default async function DoctorsPageContent({
   const profileBase = isPatient ? "/patient/doctors" : "/doctors";
   const bookBase = isPatient ? "/patient/book" : "/book";
 
+  const dict = await getDictionary();
+
   return (
     <div className="layout-container">
       {
-        (() => {
-          const dict = getDictionary();
-          return (
-            <PageHeader
-              title={serverT(dict, "doctors.find.title", "Find a doctor")}
-              description={serverT(dict, "doctors.find.description", "Search by specialty, clinic, language, telehealth support, and broader care preferences.")}
-              maxWidthClass="max-w-none"
-            />
-          );
-        })()
+        <PageHeader
+          title={serverT(dict, "doctors.find.title", "Find a doctor")}
+          description={serverT(dict, "doctors.find.description", "Search by specialty, clinic, language, telehealth support, and broader care preferences.")}
+          maxWidthClass="max-w-none"
+        />
       }
 
       <section className="grid gap-6 pb-12">
@@ -51,42 +48,40 @@ export default async function DoctorsPageContent({
           </div>
 
           <select name="specialty" defaultValue={specialty} className="h-9 rounded-full border border-[var(--color-panel-border)] px-2 text-sm">
-            {(() => { const dict = getDictionary(); return <option value="all">{serverT(dict, "doctors.find.allSpecialties", "All specialties")}</option>; })()}
+            <option value="all">{serverT(dict, "doctors.find.allSpecialties", "All specialties")}</option>
             {specialties.map((item) => (
               <option key={item} value={item}>{item}</option>
             ))}
           </select>
 
           <select name="clinic" defaultValue={clinic} className="h-9 rounded-full border border-[var(--color-panel-border)] px-2 text-sm min-w-[9rem]">
-            {(() => { const dict = getDictionary(); return <option value="all">{serverT(dict, "doctors.find.allClinics", "All clinics")}</option>; })()}
+            <option value="all">{serverT(dict, "doctors.find.allClinics", "All clinics")}</option>
             {clinics.map((item) => (
               <option key={item.id} value={item.slug}>{item.name}</option>
             ))}
           </select>
 
           <select name="language" defaultValue={language} className="h-9 rounded-full border border-[var(--color-panel-border)] px-2 text-sm">
-            {(() => { const dict = getDictionary(); return (
-              <>
-                <option value="all">{serverT(dict, "doctors.find.allLanguages", "All languages")}</option>
-                <option value="English">{serverT(dict, "languages.English", "English")}</option>
-                <option value="Spanish">{serverT(dict, "languages.Spanish", "Spanish")}</option>
-                <option value="Hindi">{serverT(dict, "languages.Hindi", "Hindi")}</option>
-                <option value="Arabic">{serverT(dict, "languages.Arabic", "Arabic")}</option>
-              </>
-            ); })()}
+            <>
+              <option value="all">{serverT(dict, "doctors.find.allLanguages", "All languages")}</option>
+              <option value="English">{serverT(dict, "languages.English", "English")}</option>
+              <option value="Spanish">{serverT(dict, "languages.Spanish", "Spanish")}</option>
+              <option value="Hindi">{serverT(dict, "languages.Hindi", "Hindi")}</option>
+              <option value="Arabic">{serverT(dict, "languages.Arabic", "Arabic")}</option>
+            </>
           </select>
 
           <select name="mode" defaultValue={mode} className="h-9 rounded-full border border-[var(--color-panel-border)] px-2 text-sm">
-            {(() => { const dict = getDictionary(); return <option value="all">{serverT(dict, "doctors.find.anyMode", "Any mode")}</option>; })()}
-            <option value="telehealth">{serverT(getDictionary(), "doctors.find.telehealth", "Telehealth")}</option>
+            <option value="all">{serverT(dict, "doctors.find.anyMode", "Any mode")}</option>
+            <option value="telehealth">{serverT(dict, "doctors.find.telehealth", "Telehealth")}</option>
           </select>
 
           <div className="w-full sm:w-auto sm:ml-3 flex flex-col sm:flex-row gap-2 sm:items-center sm:pl-3 sm:border-l sm:border-[var(--color-panel-border)]">
-            <Button type="submit" size="sm" className="w-full sm:w-auto" aria-label={serverT(getDictionary(), "doctors.find.searchAria", "Search doctors")}>
-              {serverT(getDictionary(), "doctors.find.search", "Search")}
+            <Button type="submit" size="sm" className="w-full sm:w-auto" aria-label={serverT(dict, "doctors.find.searchAria", "Search doctors")}>
+              {serverT(dict, "doctors.find.search", "Search")}
             </Button>
             <LinkButton href={profileBase} variant="ghost" size="sm" className="w-full sm:w-auto">
-              {serverT(getDictionary(), "doctors.find.clearFilters", "Clear filters")}
+              {serverT(dict, "doctors.find.clearFilters", "Clear filters")}
             </LinkButton>
           </div>
         </form>
@@ -98,11 +93,11 @@ export default async function DoctorsPageContent({
             ))}
           </div>
         ) : (
-          <EmptyState
-              icon="search"
-              title={serverT(getDictionary(), "doctors.find.emptyTitle", "No doctors match those filters")}
-              description={serverT(getDictionary(), "doctors.find.emptyDescription", "Try broadening the specialty, clinic, or language filters to see more options.")}
-            />
+              <EmptyState
+                icon="search"
+                title={serverT(dict, "doctors.find.emptyTitle", "No doctors match those filters")}
+                description={serverT(dict, "doctors.find.emptyDescription", "Try broadening the specialty, clinic, or language filters to see more options.")}
+              />
         )}
       </section>
     </div>

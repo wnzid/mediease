@@ -3,14 +3,16 @@ import { AuthFormShell } from "@/features/auth/AuthFormShell";
 import { SignInForm } from "@/features/auth/forms";
 import { getDictionary, t } from "@/lib/i18n/server";
 
-const dict = getDictionary();
+export async function generateMetadata() {
+  const dict = await getDictionary();
+  return buildMetadata({
+    title: t(dict, "auth.signIn", "Sign in"),
+    description: t(dict, "auth.signInDescription", "Sign in for patients, doctors, and administrators."),
+  });
+}
 
-export const metadata = buildMetadata({
-  title: t(dict, "auth.signIn", "Sign in"),
-  description: t(dict, "auth.signInDescription", "Sign in for patients, doctors, and administrators."),
-});
-
-export default function SignInPage() {
+export default async function SignInPage() {
+  const dict = await getDictionary();
   return (
     <AuthFormShell
       showBack

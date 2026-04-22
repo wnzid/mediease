@@ -4,18 +4,20 @@ import { AuthFormShell } from "@/features/auth/AuthFormShell";
 import { Alert } from "@/components/ui/Alert";
 import { getDictionary, t } from "@/lib/i18n/server";
 
-const dict = getDictionary();
-
-export const metadata = buildMetadata({
-  title: t(dict, "auth.verify.title", "Verify your email"),
-  description: t(dict, "auth.verify.description", "Finish verification to activate your MediEase account."),
-});
+export async function generateMetadata() {
+  const dict = await getDictionary();
+  return buildMetadata({
+    title: t(dict, "auth.verify.title", "Verify your email"),
+    description: t(dict, "auth.verify.description", "Finish verification to activate your MediEase account."),
+  });
+}
 
 export default async function VerifyPage({
   searchParams,
 }: {
   searchParams: Promise<{ email?: string }>;
 }) {
+  const dict = await getDictionary();
   const params = await searchParams;
 
   return (

@@ -48,7 +48,7 @@ type SupportDoctor = {
   phone?: string;
 };
 
-export function HeaderSummary({
+export async function HeaderSummary({
   patientName,
   patientId,
   age,
@@ -59,7 +59,7 @@ export function HeaderSummary({
   age?: number | string;
   summary?: string;
 }) {
-  const dict = getDictionary();
+  const dict = await getDictionary();
   // If no identifying props or a summary are provided, don't render an empty header.
   if (patientName === undefined && patientId === undefined && age === undefined && summary === undefined) return null;
 
@@ -80,7 +80,74 @@ export function HeaderSummary({
   );
 }
 
-export function ActionCenter({
+export async function DashboardTop({
+  patientName,
+  profileCompletion,
+  nextAppointment,
+}: {
+  patientName?: string | undefined;
+  profileCompletion?: number | undefined;
+  nextAppointment?: { startsAt?: string } | null | undefined;
+}) {
+  const dict = await getDictionary();
+
+  const name = patientName ?? serverT(dict, "patient.dashboard.header.name", "Patient");
+
+  return (
+    <div className="-mt-16 mb-4 grid items-center gap-4 sm:grid-cols-[1fr_auto]">
+      <div>
+        <p className="text-lg font-semibold text-[var(--color-ink-900)]">{serverT(dict, "patient.dashboard.top.greeting", "Hi")}, {name}</p>
+        <p className="mt-1 text-sm text-[var(--color-ink-700)]">{serverT(dict, "patient.dashboard.top.description", "Here’s what needs your attention today")}</p>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {nextAppointment && nextAppointment.startsAt ? (
+            <div className="rounded-full border border-[var(--color-panel-border)] bg-white px-3 py-1 text-sm font-medium text-[var(--color-ink-900)]">
+              {serverT(dict, "patient.dashboard.top.nextVisit", "Next visit")}: {formatDate(nextAppointment.startsAt)}
+            </div>
+          ) : null}
+
+          {typeof profileCompletion === "number" ? (
+            <div className="rounded-full border border-[var(--color-panel-border)] bg-white px-3 py-1 text-sm font-medium text-[var(--color-ink-900)]">
+              {serverT(dict, "patient.dashboard.top.profileCompletion", "Profile")}: {String(profileCompletion)}%
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <LinkButton href="/patient/book" size="md">
+          {serverT(dict, "patient.dashboard.top.book", "Book visit")}
+        </LinkButton>
+        {typeof profileCompletion === "number" && profileCompletion < 80 ? (
+          <LinkButton href="/patient/profile/onboarding" variant="ghost" size="md">
+            {serverT(dict, "patient.dashboard.top.completeProfile", "Complete profile")}
+          </LinkButton>
+        ) : (
+          <LinkButton href="/doctors" variant="ghost" size="md">
+            {serverT(dict, "patient.dashboard.top.findDoctor", "Find doctor")}
+          </LinkButton>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function QuickActions() {
+  return (
+    <div className="mb-4 grid w-full grid-cols-2 gap-3 sm:grid-cols-4">
+      <LinkButton href="/patient/book" variant="ghost" size="sm" className="justify-start gap-2">
+        <Icon name="calendar-days" className="h-4 w-4 text-[var(--color-brand-700)]" aria-hidden />
+        <span className="text-sm font-medium">Book visit</span>
+      </LinkButton>
+      <LinkButton href="/doctors" variant="ghost" size="sm" className="justify-start gap-2">
+        <Icon name="user-round" className="h-4 w-4 text-[var(--color-brand-700)]" aria-hidden />
+        <span className="text-sm font-medium">Find doctor</span>
+      </LinkButton>
+    </div>
+  );
+}
+
+export async function ActionCenter({
   profileCompletion,
   medicalSummary,
   reminders,
@@ -92,7 +159,7 @@ export function ActionCenter({
   const tasks: Array<Required<Pick<ReminderItem, "title">> & { id: string; detail?: string; href?: string; icon?: string }> = [];
 
   if (typeof profileCompletion === "number" && profileCompletion < 80) {
-    const dict = getDictionary();
+    const dict = await getDictionary();
     tasks.push({
       id: "profile",
       title: serverT(dict, "patient.dashboard.tasks.completeProfile", "Complete your profile"),
@@ -107,7 +174,7 @@ export function ActionCenter({
     !((medicalSummary.allergies?.length ?? 0) || (medicalSummary.conditions?.length ?? 0) || (medicalSummary.medications?.length ?? 0));
 
   if (medEmpty) {
-    const dict = getDictionary();
+    const dict = await getDictionary();
     tasks.push({
       id: "medical",
       title: serverT(dict, "patient.dashboard.tasks.addMedicalSummary", "Add your medical summary"),
@@ -129,63 +196,72 @@ export function ActionCenter({
     );
   }
 
-  const dict = getDictionary();
+  const dict = await getDictionary();
+
+  // Compact presentation: if no tasks, show a small success state
+  if (!tasks.length) {
+    return (
+      <Card className="border-[var(--color-panel-border)] bg-white">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="grid h-8 w-8 place-items-center rounded-full bg-[var(--color-brand-50)] text-[var(--color-brand-700)]">
+            <Icon name="check-circle" className="h-4 w-4" aria-hidden />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-[var(--color-ink-900)]">{serverT(dict, "patient.dashboard.actionCenter.title", "Action center")}</p>
+            <p className="mt-1 text-sm text-[var(--color-ink-700)]">{serverT(dict, "patient.dashboard.actionCenter.empty", "You're all set — no outstanding tasks.")}</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-[var(--color-brand-100)] bg-[var(--color-brand-50)]">
       <CardHeader
         title={serverT(dict, "patient.dashboard.actionCenter.title", "Action center")}
-        description={tasks.length ? serverT(dict, "patient.dashboard.actionCenter.descriptionTasks", "Important tasks that still need attention") : serverT(dict, "patient.dashboard.actionCenter.descriptionEmpty", "No urgent actions right now")}
+        description={serverT(dict, "patient.dashboard.actionCenter.descriptionTasks", "Important tasks that still need attention")}
         action={
-          tasks.length ? (
-            <span className="inline-flex rounded-[0.7rem] border border-[var(--color-brand-100)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--color-brand-700)]">
-              {serverT(dict, "patient.dashboard.actionCenter.openBadge", "{count} open").replace("{count}", String(tasks.length))}
-            </span>
-          ) : null
+          <span className="inline-flex rounded-[0.7rem] border border-[var(--color-brand-100)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--color-brand-700)]">
+            {serverT(dict, "patient.dashboard.actionCenter.openBadge", "{count} open").replace("{count}", String(tasks.length))}
+          </span>
         }
       />
 
-      {tasks.length ? (
-        <div className="grid gap-3">
-          {tasks.map((task) => (
+      <div className="grid gap-3">
+        {tasks.map((task) => (
+          <div
+            key={task.id}
+            className="flex items-center gap-3 rounded-[0.95rem] border border-[var(--color-panel-border)] bg-white p-3"
+          >
             <div
-              key={task.id}
-              className="flex flex-col gap-3 rounded-[0.95rem] border border-[var(--color-panel-border)] bg-white p-3.5 sm:flex-row sm:items-center sm:justify-between"
+              className={cn(
+                "grid h-10 w-10 place-items-center rounded-[0.8rem]",
+                task.icon === "warning"
+                  ? "bg-[var(--color-warning-100)] text-[var(--color-warning-800)]"
+                  : "bg-[var(--color-brand-50)] text-[var(--color-brand-700)]",
+              )}
             >
-              <div className="flex items-start gap-3">
-                <div
-                  className={cn(
-                    "grid h-10 w-10 place-items-center rounded-[0.8rem]",
-                    task.icon === "warning"
-                      ? "bg-[var(--color-warning-100)] text-[var(--color-warning-800)]"
-                      : "bg-[var(--color-brand-50)] text-[var(--color-brand-700)]",
-                  )}
-                >
-                  <Icon name={task.icon || "clipboard-list"} className="h-[18px] w-[18px]" aria-hidden />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-[var(--color-ink-900)]">{task.title}</p>
-                  {task.detail ? <p className="mt-1 text-sm leading-6 text-[var(--color-ink-600)]">{task.detail}</p> : null}
-                </div>
-              </div>
+              <Icon name={task.icon || "clipboard-list"} className="h-[18px] w-[18px]" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[var(--color-ink-900)]">{task.title}</p>
+              {task.detail ? <p className="mt-1 text-sm leading-6 text-[var(--color-ink-600)]">{task.detail}</p> : null}
+            </div>
+            <div className="ml-auto">
               {task.href ? (
                 <LinkButton href={task.href} variant="secondary" size="sm" iconRight="chevron-right" className="shrink-0">
                   {serverT(dict, "patient.dashboard.actionCenter.takeAction", "Take action")}
                 </LinkButton>
               ) : null}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-[0.9rem] border border-[var(--color-panel-border)] bg-white px-4 py-3.5 text-sm leading-6 text-[var(--color-ink-700)]">
-          {serverT(dict, "patient.dashboard.actionCenter.empty", "You have no outstanding tasks. Check messages or documents for recent updates.")}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </Card>
   );
 }
 
-export function HealthSnapshot({
+export async function HealthSnapshot({
   prescriptions,
   tests,
   messages,
@@ -194,7 +270,7 @@ export function HealthSnapshot({
   tests?: number;
   messages?: number;
 }) {
-  const dict = getDictionary();
+  const dict = await getDictionary();
   const rows = [
     { id: "pres", label: serverT(dict, "patient.dashboard.healthSnapshot.prescriptions", "Active prescriptions"), value: prescriptions, icon: "clipboard-list", href: "/patient/documents" },
     { id: "tests", label: serverT(dict, "patient.dashboard.healthSnapshot.tests", "Test results"), value: tests, icon: "file-text", href: "/patient/documents" },
@@ -237,51 +313,67 @@ export function HealthSnapshot({
   );
 }
 
-export function NextAppointment({ appointment }: { appointment?: AppointmentSummary | null }) {
-  const dict = getDictionary();
+export async function NextAppointment({ appointment, error }: { appointment?: AppointmentSummary | null; error?: boolean }) {
+  const dict = await getDictionary();
+
+  // Card header description
+  const headerDescription = error
+    ? serverT(dict, "patient.dashboard.nextAppointment.error", "Unable to load appointments")
+    : appointment
+    ? `${formatDate(appointment.startsAt)} at ${formatTime(appointment.startsAt)}`
+    : serverT(dict, "patient.dashboard.nextAppointment.noUpcoming", "No upcoming visits");
 
   return (
     <Card>
       <CardHeader
         title={serverT(dict, "patient.dashboard.nextAppointment.title", "Next appointment")}
-        description={
-          appointment ? `${formatDate(appointment.startsAt)} at ${formatTime(appointment.startsAt)}` : serverT(dict, "patient.dashboard.nextAppointment.noUpcoming", "No upcoming visits")
-        }
+        description={headerDescription}
         action={
           <div className="flex items-center gap-2">
-            {!appointment ? (
-              <LinkButton href="/patient/book" variant="secondary" size="sm">
-                {serverT(dict, "patient.dashboard.nextAppointment.bookVisit", "Book visit")}
+            {appointment ? (
+              <LinkButton href="/patient/appointments" variant="outline" size="sm">
+                {serverT(dict, "patient.dashboard.nextAppointment.viewAll", "View all")}
               </LinkButton>
-            ) : null}
-            <LinkButton href="/patient/appointments" variant={appointment ? "outline" : "ghost"} size="sm">
-              {serverT(dict, "patient.dashboard.nextAppointment.viewAll", "View all")}
-            </LinkButton>
+            ) : error ? (
+              <LinkButton href="/patient/appointments" variant="ghost" size="sm">
+                {serverT(dict, "patient.dashboard.nextAppointment.viewAll", "View all")}
+              </LinkButton>
+            ) : (
+              <>
+                <LinkButton href="/patient/book" variant="secondary" size="sm">
+                  {serverT(dict, "patient.dashboard.nextAppointment.bookVisit", "Book visit")}
+                </LinkButton>
+                <LinkButton href="/patient/appointments" variant="ghost" size="sm">
+                  {serverT(dict, "patient.dashboard.nextAppointment.viewAll", "View all")}
+                </LinkButton>
+              </>
+            )}
           </div>
         }
       />
 
-      {appointment ? (
+      {error ? (
+        <p className="text-sm leading-6 text-[var(--color-ink-700)]">{serverT(dict, "patient.dashboard.nextAppointment.errorDescription", "We couldn't fetch your appointments. Please try again later.")}</p>
+      ) : appointment ? (
         <div className="space-y-4">
           <div className="rounded-[0.95rem] border border-[var(--color-panel-border)] bg-[var(--color-surface-muted)] p-4">
-            <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-brand-700)]">{serverT(dict, "patient.dashboard.nextAppointment.upcomingVisitLabel", "Upcoming visit")}</p>
-              <p className="text-base font-semibold text-[var(--color-ink-900)]">
-                {appointment.doctorName}, {appointment.specialty}
-              </p>
-              <p className="text-sm leading-6 text-[var(--color-ink-600)]">
-                {appointment.location} / {appointment.appointmentType}
-              </p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-brand-700)]">{serverT(dict, "patient.dashboard.nextAppointment.upcomingVisitLabel", "Upcoming visit")}</p>
+                <p className="text-base font-semibold text-[var(--color-ink-900)]">
+                  {appointment.doctorName}{appointment.specialty ? `, ${appointment.specialty}` : ""}
+                </p>
+                <p className="text-sm leading-6 text-[var(--color-ink-600)]">
+                  {appointment.location ? appointment.location : serverT(dict, "patient.dashboard.nextAppointment.online", "Online")} {appointment.appointmentType ? ` • ${appointment.appointmentType}` : ""}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-[var(--color-ink-900)]">{formatDate(appointment.startsAt)}</p>
+                <p className="text-sm text-[var(--color-ink-600)]">{formatTime(appointment.startsAt)}</p>
+              </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <LinkButton href={`/patient/appointments/${appointment.id}`} variant="outline" size="sm">
-              {serverT(dict, "patient.dashboard.nextAppointment.viewDetails", "View details")}
-            </LinkButton>
-            <LinkButton href={`/patient/appointments/${appointment.id}/reschedule`} variant="ghost" size="sm">
-              {serverT(dict, "patient.dashboard.nextAppointment.reschedule", "Reschedule")}
-            </LinkButton>
-          </div>
+          {/* Actions removed: View details and Reschedule were intentionally removed per request */}
         </div>
       ) : (
         <p className="text-sm leading-6 text-[var(--color-ink-700)]">
@@ -292,10 +384,10 @@ export function NextAppointment({ appointment }: { appointment?: AppointmentSumm
   );
 }
 
-export function RecentActivity({ items = [] }: { items?: ActivityItem[] }) {
+export async function RecentActivity({ items = [] }: { items?: ActivityItem[] }) {
   const list = Array.isArray(items) ? items.slice(0, 5) : [];
 
-  const dict = getDictionary();
+  const dict = await getDictionary();
 
   return (
     <Card>
@@ -325,7 +417,7 @@ export function RecentActivity({ items = [] }: { items?: ActivityItem[] }) {
   );
 }
 
-export function CareTeamSupport({
+export async function CareTeamSupport({
   clinic,
   doctors = [],
 }: {
@@ -337,7 +429,7 @@ export function CareTeamSupport({
 
   if (!hasClinic && !hasDoctors) return null;
 
-  const dict = getDictionary();
+  const dict = await getDictionary();
 
   return (
     <Card>
