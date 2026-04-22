@@ -49,6 +49,8 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
   const [showEmailPrompt, setShowEmailPrompt] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [emailReadOnly, setEmailReadOnly] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
   const [bookingSummary, setBookingSummary] = useState<any | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -175,7 +177,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
   }, [fields.doctorId]);
 
   useEffect(() => {
-    async function checkAuth() {
+    async function checkAuthAndPrefill() {
       try {
         const supabase = createBrowserSupabaseClient();
         if (!supabase) {
@@ -183,13 +185,38 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           return;
         }
         const { data } = await supabase.auth.getUser();
-        setIsAuthenticated(Boolean(data?.user));
+        const logged = Boolean(data?.user);
+        setIsAuthenticated(logged);
+
+        if (logged) {
+          // Prefill contact fields from server-side profile/patient endpoint
+          setProfileLoading(true);
+          try {
+            const res = await fetch("/api/patient/profile");
+            const json = await res.json();
+            const profile = json?.profile ?? null;
+            const patient = json?.patient ?? null;
+
+            const name = profile?.full_name ?? (data?.user?.user_metadata?.full_name as string | undefined) ?? data?.user?.email ?? "";
+            const email = profile?.email ?? data?.user?.email ?? "";
+            const phone = patient?.phone ?? profile?.phone ?? "";
+
+            updateField("guestFullName", name as any);
+            updateField("guestEmail", email as any);
+            updateField("guestPhone", phone as any);
+            setEmailReadOnly(true);
+          } catch (e) {
+            // ignore prefill failures
+          } finally {
+            setProfileLoading(false);
+          }
+        }
       } catch (e) {
         setIsAuthenticated(false);
       }
     }
 
-    checkAuth();
+    checkAuthAndPrefill();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -359,6 +386,42 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
         addToast({ tone: "success", title: "Appointment booked", description: "Your appointment request was submitted." });
         // Use appointment summary returned from API to show confirmation modal
         if (data?.appointment) {
+          // Refresh slots and availability so the just-booked slot becomes unavailable immediately
+          try {
+            setSlotsLoading(true);
+            const slotsRes = await fetch(`/api/doctors/${fields.doctorId}/available-slots?date=${encodeURIComponent(fields.date)}`);
+            if (slotsRes.ok) {
+              const slotsJson = await slotsRes.json();
+              setSlots((slotsJson?.slots ?? []) as any[]);
+            }
+          } catch (e) {
+            // ignore refresh errors
+          } finally {
+            setSlotsLoading(false);
+          }
+
+          // Refresh availability summary for the next 30 days
+          try {
+            setSummaryLoading(true);
+            const start = new Date().toISOString().slice(0, 10);
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + 30);
+            const end = endDate.toISOString().slice(0, 10);
+            const summaryRes = await fetch(`/api/doctors/${fields.doctorId}/availability-summary?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+            if (summaryRes.ok) {
+              const summaryJson = await summaryRes.json();
+              const map: Record<string, any> = {};
+              (summaryJson?.summary ?? []).forEach((s: any) => {
+                map[s.date] = s;
+              });
+              setAvailabilitySummary(map);
+            }
+          } catch (e) {
+            // ignore
+          } finally {
+            setSummaryLoading(false);
+          }
+
           setBookingSummary(data.appointment);
           setShowConfirmation(true);
         } else {
@@ -599,8 +662,10 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                   }}
                   onBlur={() => {
                     setTouched((t) => ({ ...(t ?? {}), guestEmail: true }));
-                    checkEmailExists();
+                    if (!isAuthenticated) checkEmailExists();
                   }}
+                  readOnly={Boolean(isAuthenticated) || emailReadOnly}
+                  hint={isAuthenticated ? "Signed-in email" : undefined}
                   error={visibleError("guestEmail")}
                 />
 
@@ -702,12 +767,28 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                 ) : null}
               </dl>
 
-              <p className="text-xs text-[var(--color-ink-600)]">If you sign in later with this email, this appointment will appear in your dashboard.</p>
+              {!isAuthenticated ? (
+                <p className="text-xs text-[var(--color-ink-600)]">If you sign in later with this email, this appointment will appear in your dashboard.</p>
+              ) : null}
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button variant="secondary" size="sm" onClick={() => { setShowConfirmation(false); setBookingSummary(null); router.push("/patient/appointments"); }}>Done</Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setShowConfirmation(false);
+                    setBookingSummary(null);
+                    if (isAuthenticated) {
+                      router.push("/patient/appointments");
+                    } else {
+                      router.push("/");
+                    }
+                  }}
+                >
+                  Done
+                </Button>
                 <Button size="sm" onClick={() => { setShowConfirmation(false); setBookingSummary(null); router.push("/book"); }}>Book another appointment</Button>
-                {bookingSummary?.patient?.email ? (
+                {!isAuthenticated && bookingSummary?.patient?.email ? (
                   <Button variant="ghost" size="sm" onClick={() => router.push(`/auth/sign-in?email=${encodeURIComponent(String(bookingSummary.patient.email))}&next=${encodeURIComponent("/patient/appointments")}`)}>Sign in</Button>
                 ) : null}
               </div>

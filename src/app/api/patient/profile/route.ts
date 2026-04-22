@@ -13,9 +13,58 @@ export async function GET() {
     const user = authData.user ?? null;
     if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
-    // Use `patient_profiles` which maps 1:1 with `profiles` via id
-    const { data: patient } = await supabase.from("patient_profiles").select("*").eq("id", user.id).maybeSingle();
-    const { data: profile } = await supabase.from("profiles").select("id, full_name, email, phone, location").eq("id", user.id).maybeSingle();
+    // Resolve canonical profile id robustly. Auth user id may not equal profiles.id; try multiple fallbacks.
+    const uid = user.id;
+    const normalizedEmail = (user.email ?? "").trim().toLowerCase() || null;
+
+    let profile: any = null;
+    let patient: any = null;
+
+    // 1) Try profiles.id == uid
+    try {
+      const byId = await supabase.from("profiles").select("id, full_name, email, phone, location").eq("id", uid).maybeSingle();
+      if (byId?.data) profile = byId.data;
+    } catch (e) {
+      // ignore
+    }
+
+    // 2) Try profiles.auth_user_id == uid
+    if (!profile) {
+      try {
+        const byAuth = await supabase.from("profiles").select("id, full_name, email, phone, location, auth_user_id").eq("auth_user_id", uid).maybeSingle();
+        if (byAuth?.data) profile = byAuth.data;
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // 3) Fallback: match by email
+    if (!profile && normalizedEmail) {
+      try {
+        const byEmail = await supabase.from("profiles").select("id, full_name, email, phone, location").ilike("email", normalizedEmail).maybeSingle();
+        if (byEmail?.data) profile = byEmail.data;
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Fetch patient_profiles row for the resolved profile id if available
+    try {
+      if (profile?.id) {
+        const { data: patientRow } = await supabase.from("patient_profiles").select("*").eq("id", profile.id).maybeSingle();
+        patient = patientRow ?? null;
+      } else {
+        // If no profile resolved, try patient_profiles by uid (best-effort)
+        const { data: patientRow } = await supabase.from("patient_profiles").select("*").eq("id", uid).maybeSingle();
+        patient = patientRow ?? null;
+        if (patient && !profile) {
+          const { data: prof } = await supabase.from("profiles").select("id, full_name, email, phone, location").eq("id", patient.id).maybeSingle();
+          profile = prof ?? null;
+        }
+      }
+    } catch (e) {
+      // ignore; best-effort
+    }
 
     return NextResponse.json({ profile: profile ?? null, patient: patient ?? null });
   } catch (err) {
