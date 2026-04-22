@@ -1,12 +1,11 @@
 "use client";
 
-"use client";
-
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
 import { useLocale } from "@/lib/i18n/useLocale";
+import { localizeDoctorBio, localizeLanguage, localizeSpecialty } from "@/lib/i18n/labels";
 import { Card } from "@/components/ui/Card";
 import type { Doctor } from "@/types/doctors";
 
@@ -29,10 +28,13 @@ export function DoctorCard({
 
   const parts: string[] = [];
   if (doctor.yearsExperience && doctor.yearsExperience > 0) parts.push(`${doctor.yearsExperience} ${t("doctors.yearsExperienceSuffix")}`);
-  const langs = (doctor.languages ?? []).join(", ");
+  const langs = (doctor.languages ?? []).map((language) => localizeLanguage(t, language)).join(", ");
   if (langs) parts.push(langs);
   if ((doctor.reviewCount ?? 0) > 0 && typeof doctor.rating === "number") parts.push(`${doctor.rating.toFixed(1)} / 5`);
   if (primaryClinicName) parts.push(primaryClinicName);
+  const specialty = localizeSpecialty(t, doctor.specialty);
+  const subSpecialty = doctor.subSpecialty ? localizeSpecialty(t, doctor.subSpecialty) : "";
+  const bio = localizeDoctorBio(t, doctor.bio);
 
   return (
     <Card className={`${compact ? "p-2" : "p-3"} transition-shadow hover:shadow-[var(--shadow-panel)]`}>
@@ -52,11 +54,11 @@ export function DoctorCard({
                 <p className="text-lg font-semibold leading-tight text-[var(--color-ink-950)] truncate">{doctor.fullName}</p>
               )}
 
-              <p className="mt-1 text-sm text-[var(--color-ink-600)]">{doctor.specialty}{doctor.subSpecialty ? ` · ${doctor.subSpecialty}` : ""}</p>
+              <p className="mt-1 text-sm text-[var(--color-ink-600)]">{specialty}{subSpecialty ? ` · ${subSpecialty}` : ""}</p>
 
               <p className="mt-2 text-xs text-[var(--color-ink-600)]">{parts.join(" · ")}</p>
 
-              {!compact ? <p className="mt-2 text-sm text-[var(--color-ink-700)] max-h-12 overflow-hidden">{doctor.bio}</p> : null}
+              {!compact && bio ? <p className="mt-2 text-sm text-[var(--color-ink-700)] max-h-12 overflow-hidden">{bio}</p> : null}
             </div>
 
             <div className="flex-shrink-0 flex flex-col items-end gap-2">

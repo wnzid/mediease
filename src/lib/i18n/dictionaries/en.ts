@@ -29,6 +29,7 @@ const en = {
     notFoundBody: "We couldn't find the page you're looking for.",
     loading: "Working...",
     accessibility: "Accessibility",
+    search: "Search",
   },
 
   header: {
@@ -60,6 +61,9 @@ const en = {
     contact: "Contact",
     privacy: "Privacy",
     terms: "Terms",
+    address: "Siauliai, Lithuania",
+    hoursLabel: "Hours",
+    openingHours: "Mon-Fri 08:00-17:00; Sat 09:00-13:00; Sun closed",
     columns: {
       explore: "Explore",
       patient: "Patient",
@@ -84,6 +88,7 @@ const en = {
     diagnostics: "Diagnostics",
     surgery: "Surgery",
     inpatient: "Inpatient care",
+    inpatientCare: "Inpatient care",
     readMore: "Read more",
     items: {
       generalConsultationDesc: "Routine outpatient visits, chronic-care follow-up, and initial assessments to find the right care path.",
@@ -92,6 +97,7 @@ const en = {
       diagnosticImagingDesc: "On-site X-ray, ultrasound, CT and MRI with rapid reporting to guide clinical decisions.",
       laboratoryTestingDesc: "Integrated lab services with electronic results and clinician notifications for timely care.",
       inpatientCareDesc: "Comfortable monitored rooms, nursing teams, and coordinated discharge planning for safe recovery.",
+      preventiveCareDesc: "Screenings, vaccinations, wellness visits, and early-risk checks that help patients stay ahead of illness.",
     },
     list: {
       sameDay: "Same-day and scheduled consultations",
@@ -109,11 +115,34 @@ const en = {
     laboratoryTesting: "Laboratory Testing",
     diagnosticsTitle: "Diagnostics and patient monitoring",
     diagnosticsDescription: "We combine modern imaging, laboratory coordination, and continuous monitoring to support fast, confident clinical decisions.",
+    diagnosticsBullets: {
+      monitoring: "Continuous patient monitoring and telemetry",
+      imaging: "Imaging coordination: X-ray, CT, MRI, ultrasound",
+      labs: "Rapid lab turnaround and integrated results",
+      observation: "Pre- and post-procedure observation and assessment",
+    },
     contactDiagnostics: "Contact diagnostics",
     surgicalTitle: "Surgical and procedural care",
     surgicalDescription: "Our surgical teams provide pre-procedure planning, safe intraoperative care, and structured post-operative monitoring.",
+    surgicalBullets: {
+      assessment: "Pre-procedure assessment and patient preparation",
+      suites: "Dedicated operating suites and perioperative teams",
+      recovery: "Post-operative monitoring and tailored recovery plans",
+    },
     inpatientTitle: "Inpatient care and recovery",
     inpatientDescription: "Comfortable patient rooms, coordinated nursing care, and safe transitions home.",
+    mediaAlt: {
+      clinicalServices: "Clinical services",
+      patientMonitor: "Patient monitor",
+      bedsideMonitor: "Bedside monitor",
+      clinicalStaff: "Clinical staff",
+      operatingRoom: "Operating room",
+      clinician: "Clinician",
+      equipment: "Equipment",
+      nurseCheckingPatient: "Nurse checking patient",
+      patientRoom: "Patient room",
+      rehabRecovery: "Rehab and recovery",
+    },
     howToAccessTitle: "How to access care",
     howToAccessSubtitle: "A simple path to the care you need.",
     howSteps: {
@@ -213,6 +242,20 @@ const en = {
       unknown: "An unknown error occurred during sign in.",
     },
     goHome: "Go to home",
+    messages: {
+      correctHighlightedFields: "Please correct the highlighted fields.",
+      supabaseNotConfiguredSignIn: "Supabase is not configured. Please configure Supabase to sign in.",
+      supabaseEnvMissing: "Supabase is not configured. Please add Supabase environment variables.",
+      signInFailedCredentials: "We could not sign you in. Please check your credentials.",
+      welcomeBack: "Welcome back.",
+      internalOnly: "This login is for internal staff and clinicians only. Use the patient sign-in page.",
+      supabaseNotConfiguredSignUp: "Supabase is not configured. Please configure Supabase to sign up.",
+      supabaseNotConfigured: "Supabase is not configured.",
+      accountCreatedVerifyEmail: "Account created. Please check your inbox to verify your email.",
+      passwordResetSent: "Password reset instructions have been sent if the account exists.",
+      reviewNewPasswordFields: "Please review the new password fields.",
+      passwordUpdated: "Password updated successfully.",
+    },
   },
 
   forms: {
@@ -260,6 +303,7 @@ const en = {
     digital: {
       title: "Monitored care & diagnostics",
       lead: "Modern equipment and live monitoring help teams make confident decisions.",
+      imageAlt: "Bedside monitor",
       features: {
         ePrescribing: {
           title: "E-prescribing",
@@ -286,6 +330,178 @@ const en = {
       seePatientWorkflows: "See patient workflows",
       exploreClinicOperations: "Explore clinic operations",
     },
+    features: {
+      title: "A healthcare product foundation designed for calm, trustworthy decisions",
+      description: "MediEase balances premium product quality with plain-language workflows that feel reassuring instead of overwhelming.",
+      items: {
+        doctorDiscovery: {
+          title: "Doctor discovery with useful filters",
+          description: "Search by specialty, language, clinic, appointment mode, and availability without losing context.",
+        },
+        guidedBooking: {
+          title: "Guided booking flow",
+          description: "A multi-step appointment wizard keeps choices simple, validated, and visible at every stage.",
+        },
+        roleWorkspaces: {
+          title: "Role-based workspaces",
+          description: "Patients, doctors, staff, and admins all land in focused dashboards instead of sharing cluttered views.",
+        },
+        feedback: {
+          title: "Clear feedback and notifications",
+          description: "Status badges, reminders, and next-step cues keep care coordination visible and understandable.",
+        },
+        modes: {
+          title: "Flexible operation modes",
+          description: "Support telehealth, in-person visits, clinic associations, and schedule management from one platform.",
+        },
+        accessibility: {
+          title: "Accessibility settings built in",
+          description: "Text scaling, reduced motion, high contrast, and simplified interface options are first-class controls.",
+        },
+      },
+    },
+  },
+
+  pages: {
+    about: {
+      eyebrow: "About MediEase",
+      title: "MediEase Hospital - patient-centered care you can trust",
+      description: "We provide compassionate, coordinated care across specialties. Our teams focus on safety, clear communication, and practical support for patients and families.",
+      imageAlt: "Care team",
+      cardTitle: "What matters to patients",
+      points: {
+        communication: "Patient-first care with clear communication and follow-up.",
+        clinicians: "Experienced clinicians across key specialties.",
+        facilities: "Modern facilities and coordinated inpatient services.",
+      },
+    },
+    contact: {
+      eyebrow: "Contact",
+      title: "Get in touch with our care team",
+      description: "Phone, email, and visiting information - here's how to reach us and when to come in.",
+      mainContact: "Main contact",
+      phoneLabel: "Phone",
+      addressHours: "Address & hours",
+      emergency: "Emergency",
+      emergencyText: "If this is a medical emergency, call your local emergency number immediately.",
+      helpfulLinks: "Helpful links",
+      links: {
+        appointments: "How to book an appointment",
+        faq: "Frequently asked questions",
+        accessibility: "Accessibility support",
+      },
+    },
+    appointments: {
+      eyebrow: "Appointments",
+      title: "Book care that fits your needs",
+      description: "Information on appointment types, what to bring, and how to prepare for visits - with clear steps to book online or by phone.",
+      imageAlt: "Patient room",
+      cardTitle: "Appointment types",
+      items: {
+        general: "General consultation and follow-up visits",
+        specialist: "Specialist consultation and referrals",
+        surgery: "Pre-op and post-op checks",
+        modes: "Telehealth and in-person options",
+      },
+      startBooking: "Start booking",
+    },
+    faq: {
+      eyebrow: "Frequently asked questions",
+      title: "Clear answers for product, implementation, and accessibility considerations",
+      description: "MediEase is meant to be inspected, extended, and adapted responsibly. These answers cover the most common architectural questions.",
+      items: {
+        demo: {
+          question: "Can MediEase run without a configured Supabase project?",
+          answer: "Yes. Demo mode is built in so teams can review flows before wiring production credentials.",
+        },
+        access: {
+          question: "How are role-based sections protected?",
+          answer: "Middleware provides fast route checks while server-side layouts re-validate access before rendering protected areas.",
+        },
+        accessibility: {
+          question: "Does the platform account for accessibility settings?",
+          answer: "Yes. Text size, contrast, reduced motion, and simplified interface controls are available as first-class preferences.",
+        },
+      },
+    },
+    forPatients: {
+      eyebrow: "For patients",
+      title: "Book, prepare, and manage care with less friction",
+      description: "The patient experience centers on clarity. Each page is designed to reduce uncertainty, not add more work during already stressful healthcare moments.",
+      benefits: {
+        search: "Search specialists by availability, language, clinic, and telehealth support",
+        booking: "Book appointments with a clear multi-step wizard and visible confirmation summary",
+        manage: "Review upcoming visits, profile information, saved doctors, notifications, and accessibility settings",
+      },
+    },
+    forDoctors: {
+      eyebrow: "For clinics",
+      title: "Operational views designed for clinicians, front desks, and administrators",
+      description: "MediEase keeps each role focused on what matters while preserving the cross-team visibility needed to coordinate care smoothly.",
+      imageAlt: "Surgeon",
+      areas: {
+        doctor: {
+          title: "Doctor workspace",
+          description: "Today's schedule, appointment queue, availability management, patient context, and profile settings.",
+        },
+        staff: {
+          title: "Clinic staff workspace",
+          description: "Appointment overview, doctor schedule coordination, patient list support, and front-desk style placeholders.",
+        },
+        admin: {
+          title: "Admin workspace",
+          description: "Users, doctors, clinics, appointments, analytics placeholders, and policy-aware oversight structure.",
+        },
+      },
+    },
+    privacy: {
+      eyebrow: "Privacy and security",
+      title: "A product foundation that keeps security and access boundaries in view",
+      description: "This codebase is structured to evolve into production deployment with Supabase auth, row-level security, and controlled role access.",
+      topics: {
+        serviceKeys: "Service role keys are intentionally excluded from client code and are never exposed in the browser.",
+        access: "Role access is guarded in middleware and checked again on the server for protected sections.",
+        rls: "Supabase RLS policies are documented separately so profile, appointment, and notification access can remain principle-driven.",
+      },
+    },
+    pricing: {
+      eyebrow: "Pricing",
+      title: "Simple tiers for pilots, clinics, and healthcare networks",
+      description: "Contact us for pricing and deployment options tailored to your clinic or network.",
+      talkToMediEase: "Talk to MediEase",
+      tiers: {
+        starter: {
+          name: "Starter",
+          price: "$0",
+          audience: "Pilot teams",
+          features: {
+            trial: "Trial pilot with sample data",
+            booking: "Patient booking journey",
+            access: "Basic access controls",
+          },
+        },
+        clinic: {
+          name: "Clinic",
+          price: "$299",
+          audience: "Single clinic operations",
+          features: {
+            auth: "Supabase-backed auth",
+            scheduling: "Doctor and staff scheduling",
+            dashboards: "Patient dashboards and notifications",
+          },
+        },
+        network: {
+          name: "Network",
+          price: "Custom",
+          audience: "Multi-clinic organizations",
+          features: {
+            admin: "Admin oversight",
+            reporting: "Multi-site reporting",
+            integrations: "Operational policy expansion and integrations",
+          },
+        },
+      },
+    },
   },
 
   calendar: {
@@ -296,6 +512,20 @@ const en = {
     telehealthAvailable: "Telehealth available",
     yearsExperienceSuffix: "years' experience",
     viewProfile: "View profile",
+    profileDetailsSoon: "Profile details will be added soon.",
+    bookAppointment: "Book appointment",
+    availabilityPreview: "Availability preview",
+    noUpcomingAvailability: "No upcoming availability. Click Book appointment to request a visit.",
+    unableToLoadAvailability: "Unable to load availability.",
+    reviewsPlaceholder: "Reviews placeholder",
+    reviewsPlaceholderDescription: "Production review aggregation can be connected later. For now, the profile keeps the structure ready without inventing fake patient detail.",
+    details: "Details",
+    languagesLabel: "Languages",
+    experienceLabel: "Experience",
+    yearsLabel: "years",
+    insuranceLabel: "Insurance",
+    clinics: "Clinics",
+    relatedDoctors: "Related doctors",
     
     find: {
       title: "Find a doctor",
@@ -310,6 +540,35 @@ const en = {
       clearFilters: "Clear filters",
       emptyTitle: "No doctors match those filters",
       emptyDescription: "Try broadening the specialty, clinic, or language filters to see more options.",
+    },
+  },
+
+  languages: {
+    English: "English",
+    Spanish: "Spanish",
+    Hindi: "Hindi",
+    Arabic: "Arabic",
+  },
+
+  specialties: {
+    generalMedicine: "General Medicine",
+    cardiology: "Cardiology",
+    dermatology: "Dermatology",
+    pediatrics: "Pediatrics",
+    neurology: "Neurology",
+    orthopedics: "Orthopedics",
+    familyMedicine: "Family Medicine",
+    internalMedicine: "Internal Medicine",
+  },
+
+  booking: {
+    errors: {
+      chooseDoctor: "Choose a doctor to continue.",
+      chooseAppointmentType: "Choose an appointment type.",
+      selectMode: "Select how you would like to meet.",
+      chooseDate: "Choose a date.",
+      chooseTime: "Choose an available time slot.",
+      reasonRequired: "Share a short reason for the visit.",
     },
   },
 
@@ -462,9 +721,15 @@ const en = {
         reason: "Reason",
         confirm: "Confirm",
       },
+      progress: {
+        ariaLabel: "Booking progress",
+        status: "Step {current} of {total}",
+        stepAria: "Step {number}: {label}",
+      },
       reviewSummary: "Review your booking summary before confirming.",
       missingDate: "Date not selected",
       missingTime: "time not selected",
+      atTime: "at",
       noReason: "No visit reason provided yet.",
       signedInEmail: "Signed-in email",
       emailPrompt: {

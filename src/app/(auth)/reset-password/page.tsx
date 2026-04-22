@@ -12,14 +12,17 @@ export async function generateMetadata() {
 }
 
 export default async function ResetPasswordPage() {
-  const dict = await getDictionary();
   return (
     <AuthFormShell
-      eyebrow={t(dict, "auth.resetPage.eyebrow", "Secure your account")}
-      title={t(dict, "auth.resetPage.title", "Choose a new password")}
-      description={t(dict, "auth.resetPage.description", "Pick a password that you can remember and that keeps your workspace secure.")}
+      eyebrowKey="auth.resetPage.eyebrow"
+      eyebrow="Secure your account"
+      titleKey="auth.resetPage.title"
+      title="Choose a new password"
+      descriptionKey="auth.resetPage.description"
+      description="Pick a password that you can remember and that keeps your workspace secure."
       alternateHref="/sign-in"
-      alternateLabel={t(dict, "auth.backToSignIn", "Back to sign in")}
+      alternateLabelKey="auth.backToSignIn"
+      alternateLabel="Back to sign in"
       compact
     >
       <ResetPasswordForm />

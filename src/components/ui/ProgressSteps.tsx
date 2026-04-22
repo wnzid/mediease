@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@/lib/utils/cn";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 type ProgressStepsProps = {
   currentStep: number;
@@ -7,14 +10,19 @@ type ProgressStepsProps = {
 };
 
 export function ProgressSteps({ currentStep, steps, onStepClick }: ProgressStepsProps) {
+  const { t } = useLocale();
   const total = steps.length;
+  const status = t("patient.booking.progress.status", "Step {current} of {total}")
+    .replace("{current}", String(currentStep))
+    .replace("{total}", String(total));
+  const progressLabel = t("patient.booking.progress.ariaLabel", "Booking progress");
 
   return (
     <div aria-hidden={false}>
       {/* Mobile condensed header */}
       <div className="block md:hidden">
         <div className="flex items-baseline justify-between">
-          <p className="text-sm font-medium text-[var(--color-ink-900)]">{`Step ${currentStep} of ${total}`}</p>
+          <p className="text-sm font-medium text-[var(--color-ink-900)]">{status}</p>
           <p className="text-sm text-[var(--color-ink-600)] truncate max-w-[60%]">{steps[currentStep - 1]}</p>
         </div>
         <div className="mt-2 flex items-center gap-2" aria-hidden>
@@ -36,7 +44,7 @@ export function ProgressSteps({ currentStep, steps, onStepClick }: ProgressSteps
       </div>
 
       {/* Desktop horizontal stepper */}
-      <ol className="hidden md:flex items-center" role="list" aria-label="Booking progress">
+      <ol className="hidden md:flex items-center" role="list" aria-label={progressLabel}>
         {steps.map((label, index) => {
           const stepNumber = index + 1;
           const isComplete = stepNumber < currentStep;
@@ -50,7 +58,9 @@ export function ProgressSteps({ currentStep, steps, onStepClick }: ProgressSteps
                   type={clickable ? "button" : "button"}
                   onClick={() => clickable && onStepClick?.(stepNumber)}
                   aria-current={isCurrent ? "step" : undefined}
-                  aria-label={`Step ${stepNumber}: ${label}`}
+                  aria-label={t("patient.booking.progress.stepAria", "Step {number}: {label}")
+                    .replace("{number}", String(stepNumber))
+                    .replace("{label}", label)}
                   className={cn(
                     "relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold outline-none",
                     isComplete

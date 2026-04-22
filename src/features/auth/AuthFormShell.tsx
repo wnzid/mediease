@@ -1,28 +1,44 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import BackButton from "@/components/layout/BackButton";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 export function AuthFormShell({
   eyebrow,
+  eyebrowKey,
   title,
+  titleKey,
   description,
+  descriptionKey,
   alternateHref,
   alternateLabel,
+  alternateLabelKey,
   children,
   compact,
   showBack,
   backHref,
 }: {
-  eyebrow: string;
-  title: string;
-  description: string;
+  eyebrow?: string;
+  eyebrowKey?: string;
+  title?: string;
+  titleKey?: string;
+  description?: string;
+  descriptionKey?: string;
   alternateHref?: string;
   alternateLabel?: string;
+  alternateLabelKey?: string;
   children: React.ReactNode;
   compact?: boolean;
   showBack?: boolean;
   backHref?: string;
 }) {
+  const { t } = useLocale();
+  const resolvedEyebrow = eyebrowKey ? t(eyebrowKey, eyebrow ?? "") : eyebrow ?? "";
+  const resolvedTitle = titleKey ? t(titleKey, title ?? "") : title ?? "";
+  const resolvedDescription = descriptionKey ? t(descriptionKey, description ?? "") : description ?? "";
+  const resolvedAlternateLabel = alternateLabelKey ? t(alternateLabelKey, alternateLabel ?? "") : alternateLabel;
   const cardPadding = compact ? "p-6 sm:p-7" : "p-6 sm:p-8";
   const titleSize = compact ? "text-2xl" : "text-[1.95rem]";
   const gapTop = compact ? "mt-5" : "mt-6";
@@ -36,15 +52,15 @@ export function AuthFormShell({
       ) : null}
 
       <div className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-700)]">{eyebrow}</p>
-        <h1 className={`${titleSize} font-semibold tracking-[-0.03em] text-[var(--color-ink-950)]`}>{title}</h1>
-        <p className="text-sm leading-6 text-[var(--color-ink-600)] sm:text-[15px]">{description}</p>
+        {resolvedEyebrow ? <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-700)]">{resolvedEyebrow}</p> : null}
+        <h1 className={`${titleSize} font-semibold tracking-[-0.03em] text-[var(--color-ink-950)]`}>{resolvedTitle}</h1>
+        {resolvedDescription ? <p className="text-sm leading-6 text-[var(--color-ink-600)] sm:text-[15px]">{resolvedDescription}</p> : null}
       </div>
       <div className={gapTop}>{children}</div>
-      {alternateHref && alternateLabel ? (
+      {alternateHref && resolvedAlternateLabel ? (
         <p className="mt-5 text-sm text-[var(--color-ink-600)]">
           <Link href={alternateHref} className="font-semibold text-[var(--color-brand-700)]">
-            {alternateLabel}
+            {resolvedAlternateLabel}
           </Link>
         </p>
       ) : null}

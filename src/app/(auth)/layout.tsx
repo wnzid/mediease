@@ -12,7 +12,7 @@ export default function AuthLayout({
     <div className="min-h-screen bg-white">
       <div className="grid min-h-screen lg:grid-cols-2">
         <div className="hidden lg:block relative">
-          <Image src="/stock-images/1 (2).jpg" alt="Care team" fill loading="eager" className="object-cover" />
+          <Image src="/stock-images/1 (2).jpg" alt="" fill loading="eager" className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-white px-8">

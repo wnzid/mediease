@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/i18n/useLocale";
 import { Icon } from "@/components/ui/Icon";
 
 export function LanguageSwitcher({ compact }: { compact?: boolean }) {
   const { locale, setLocale, t } = useLocale();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   function select(l: typeof locale) {
     setLocale(l);
     setOpen(false);
+    router.refresh();
   }
 
   return (

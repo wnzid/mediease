@@ -28,10 +28,44 @@ type BookingWizardProps = {
   clinics?: ReadonlyArray<{ id: string; name: string; address?: string }>;
 };
 
+type Slot = {
+  startAt: string;
+  endAt: string;
+  label: string;
+  isAvailable: boolean;
+  appointmentId?: string | null;
+  availabilityId?: string | null;
+};
+
+type AvailabilityDay = {
+  status: "available" | "fullyBooked" | "unavailable";
+  totalSlots: number;
+  availableSlots: number;
+};
+
+type AvailabilitySummaryItem = AvailabilityDay & {
+  date: string;
+};
+
+type BookingSummary = {
+  reference?: string | null;
+  startsAt?: string | null;
+  appointmentType?: string | null;
+  mode?: string | null;
+  doctor?: { fullName?: string | null } | null;
+  patient?: { fullName?: string | null; email?: string | null; phone?: string | null } | null;
+  clinic?: { name?: string | null } | null;
+};
+
+type PatientProfileResponse = {
+  profile?: { full_name?: string | null; email?: string | null; phone?: string | null } | null;
+  patient?: { phone?: string | null } | null;
+};
+
 export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appointmentModeOptions, clinics }: BookingWizardProps) {
   const router = useRouter();
   const { addToast } = useToast();
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [currentStep, setCurrentStep] = useState(1);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof BookingFields, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof BookingFields, boolean>>>({});
@@ -54,15 +88,15 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
   const [emailReadOnly, setEmailReadOnly] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
-  const [bookingSummary, setBookingSummary] = useState<any | null>(null);
+  const [bookingSummary, setBookingSummary] = useState<BookingSummary | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const lastToastKey = useRef<string | null>(null);
-  const [slots, setSlots] = useState<Array<{ startAt: string; endAt: string; label: string; isAvailable: boolean; appointmentId?: string | null; availabilityId?: string | null }>>([]);
+  const [slots, setSlots] = useState<Slot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
-  const [availabilitySummary, setAvailabilitySummary] = useState<Record<string, { status: "available" | "fullyBooked" | "unavailable"; totalSlots: number; availableSlots: number }> | null>(null);
+  const [availabilitySummary, setAvailabilitySummary] = useState<Record<string, AvailabilityDay> | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
 
@@ -86,22 +120,22 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
 
       try {
         const res = await fetch(`/api/doctors/${fields.doctorId}/available-slots?date=${encodeURIComponent(fields.date)}`);
-        const data = await res.json();
+        const data = (await res.json()) as { error?: string; slots?: Slot[] };
         if (!res.ok) {
           setSlotsError(data?.error ?? t("errors.failedToLoadSlots", "Failed to load slots"));
         } else {
-          const newSlots = (data?.slots ?? []) as any;
+          const newSlots = data?.slots ?? [];
           setSlots(newSlots);
           // Auto-select first available slot if none already selected
           if (!fields.time) {
-            const firstAvailable = newSlots.find((s: any) => s.isAvailable);
+            const firstAvailable = newSlots.find((slot) => slot.isAvailable);
             if (firstAvailable) {
               updateField("time", new Date(firstAvailable.startAt).toISOString());
             }
           }
 
           // If this date has no available slots, try to find the next nearest date with available slots
-          const anyAvailable = newSlots.some((s: any) => s.isAvailable);
+          const anyAvailable = newSlots.some((slot) => slot.isAvailable);
           if (!anyAvailable && availabilitySummary) {
             const dates = Object.keys(availabilitySummary).sort();
             const currentIndex = dates.indexOf(fields.date);
@@ -109,7 +143,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
             const next = forward.find((d) => (availabilitySummary[d]?.availableSlots ?? 0) > 0);
             if (next && next !== fields.date) {
               // switch to next available date and let the effect re-run to load its slots
-              updateField("date", next as any);
+              updateField("date", next);
               // skip showing the empty message for this date
               setSlots([]);
               setSlotsLoading(true);
@@ -149,21 +183,21 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
 
       try {
         const res = await fetch(`/api/doctors/${fields.doctorId}/availability-summary?start=${start}&end=${end}`);
-        const data = await res.json();
+        const data = (await res.json()) as { error?: string; summary?: AvailabilitySummaryItem[] };
         if (!res.ok) {
           setSummaryError(data?.error ?? t("errors.failedToLoadAvailability", "Failed to load availability"));
           setSummaryLoading(false);
           return;
         }
 
-        const map: Record<string, any> = {};
-        (data.summary ?? []).forEach((s: any) => {
-          map[s.date] = s;
+        const map: Record<string, AvailabilityDay> = {};
+        (data.summary ?? []).forEach((summaryItem) => {
+          map[summaryItem.date] = summaryItem;
         });
         setAvailabilitySummary(map);
 
         // pick nearest available date
-        const nearest = (data.summary ?? []).find((s: any) => s.status === "available");
+        const nearest = (data.summary ?? []).find((summaryItem) => summaryItem.status === "available");
         if (nearest) {
           updateField("date", nearest.date);
         }
@@ -195,7 +229,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           setProfileLoading(true);
           try {
             const res = await fetch("/api/patient/profile");
-            const json = await res.json();
+            const json = (await res.json()) as PatientProfileResponse;
             const profile = json?.profile ?? null;
             const patient = json?.patient ?? null;
 
@@ -203,9 +237,9 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
             const email = profile?.email ?? data?.user?.email ?? "";
             const phone = patient?.phone ?? profile?.phone ?? "";
 
-            updateField("guestFullName", name as any);
-            updateField("guestEmail", email as any);
-            updateField("guestPhone", phone as any);
+            updateField("guestFullName", name);
+            updateField("guestEmail", email);
+            updateField("guestPhone", phone);
             setEmailReadOnly(true);
           } catch (e) {
             // ignore prefill failures
@@ -373,7 +407,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        const data = await res.json();
+        const data = (await res.json()) as { error?: string; appointment?: BookingSummary };
         if (!res.ok || data?.error) {
           const msg = data?.error ?? t("errors.unableToCreateAppointment", "Unable to create appointment.");
           const key = `danger|Booking failed|${msg}`;
@@ -393,8 +427,8 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
             setSlotsLoading(true);
             const slotsRes = await fetch(`/api/doctors/${fields.doctorId}/available-slots?date=${encodeURIComponent(fields.date)}`);
             if (slotsRes.ok) {
-              const slotsJson = await slotsRes.json();
-              setSlots((slotsJson?.slots ?? []) as any[]);
+              const slotsJson = (await slotsRes.json()) as { slots?: Slot[] };
+              setSlots(slotsJson?.slots ?? []);
             }
           } catch (e) {
             // ignore refresh errors
@@ -411,10 +445,10 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
             const end = endDate.toISOString().slice(0, 10);
             const summaryRes = await fetch(`/api/doctors/${fields.doctorId}/availability-summary?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
             if (summaryRes.ok) {
-              const summaryJson = await summaryRes.json();
-              const map: Record<string, any> = {};
-              (summaryJson?.summary ?? []).forEach((s: any) => {
-                map[s.date] = s;
+              const summaryJson = (await summaryRes.json()) as { summary?: AvailabilitySummaryItem[] };
+              const map: Record<string, AvailabilityDay> = {};
+              (summaryJson?.summary ?? []).forEach((summaryItem) => {
+                map[summaryItem.date] = summaryItem;
               });
               setAvailabilitySummary(map);
             }
@@ -663,7 +697,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
               {visibleError("appointmentType") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("appointmentType")}</p> : null}
               {visibleError("mode") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("mode")}</p> : null}
               <p className="text-sm text-[var(--color-ink-700)]">
-                {fields.date || t("patient.booking.missingDate", "Date not selected")} at {fields.time ? new Date(fields.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : t("patient.booking.missingTime", "time not selected")}
+                {fields.date || t("patient.booking.missingDate", "Date not selected")} {t("patient.booking.atTime", "at")} {fields.time ? new Date(fields.time).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) : t("patient.booking.missingTime", "time not selected")}
               </p>
               {visibleError("date") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("date")}</p> : null}
               {visibleError("time") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("time")}</p> : null}
@@ -675,7 +709,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                   label={t("forms.fullNameLabel", "Full name")}
                   value={fields.guestFullName as string}
                   onChange={(e) => {
-                    updateField("guestFullName", e.target.value as any);
+                    updateField("guestFullName", e.target.value);
                     setTouched((t) => ({ ...(t ?? {}), guestFullName: true }));
                     setShowAllErrors(false);
                   }}
@@ -688,7 +722,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                   type="email"
                   value={fields.guestEmail as string}
                   onChange={(e) => {
-                    updateField("guestEmail", e.target.value as any);
+                    updateField("guestEmail", e.target.value);
                     setTouched((t) => ({ ...(t ?? {}), guestEmail: true }));
                     setShowAllErrors(false);
                   }}
@@ -707,7 +741,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                   type="tel"
                   value={fields.guestPhone as string}
                   onChange={(e) => {
-                    updateField("guestPhone", e.target.value as any);
+                    updateField("guestPhone", e.target.value);
                     setTouched((t) => ({ ...(t ?? {}), guestPhone: true }));
                     setShowAllErrors(false);
                   }}
@@ -771,11 +805,11 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.date", "Date")}</dt>
-                  <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.startsAt ? new Date(bookingSummary.startsAt).toLocaleDateString() : fields.date}</dd>
+                  <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.startsAt ? new Date(bookingSummary.startsAt).toLocaleDateString(locale) : fields.date}</dd>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.time", "Time")}</dt>
-                  <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.startsAt ? new Date(bookingSummary.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : (fields.time ? new Date(fields.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")}</dd>
+                  <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.startsAt ? new Date(bookingSummary.startsAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) : (fields.time ? new Date(fields.time).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) : "")}</dd>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.mode", "Mode")}</dt>
@@ -821,7 +855,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                 </Button>
                 <Button size="sm" onClick={() => { setShowConfirmation(false); setBookingSummary(null); router.push("/book"); }}>{t("patient.booking.actions.bookAnother", "Book another appointment")}</Button>
                 {!isAuthenticated && bookingSummary?.patient?.email ? (
-                  <Button variant="ghost" size="sm" onClick={() => router.push(`/auth/sign-in?email=${encodeURIComponent(String(bookingSummary.patient.email))}&next=${encodeURIComponent("/patient/appointments")}`)}>{t("auth.signIn", "Sign in")}</Button>
+                  <Button variant="ghost" size="sm" onClick={() => router.push(`/auth/sign-in?email=${encodeURIComponent(String(bookingSummary?.patient?.email ?? ""))}&next=${encodeURIComponent("/patient/appointments")}`)}>{t("auth.signIn", "Sign in")}</Button>
                 ) : null}
               </div>
             </div>

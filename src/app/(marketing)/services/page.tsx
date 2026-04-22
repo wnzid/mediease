@@ -1,15 +1,11 @@
 import Image from "next/image";
-import Link from "next/link";
-import { cookies } from "next/headers";
 import { buildMetadata } from "@/lib/constants/site";
 import { SectionIntro } from "@/components/layout/SectionIntro";
 import ServiceMediaGallery from "@/components/ServiceMediaGallery";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import en from "@/lib/i18n/dictionaries/en";
-import lt from "@/lib/i18n/dictionaries/lt";
-import { DEFAULT_LOCALE, LOCALE_COOKIE, isSupportedLocale } from "@/lib/i18n/config";
+import { getDictionary, t as serverT } from "@/lib/i18n/server";
 
 export const metadata = buildMetadata({
   title: "Services",
@@ -17,32 +13,8 @@ export const metadata = buildMetadata({
 });
 
 export default async function ServicesPage() {
-  const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
-  const locale = isSupportedLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
-  const DICT: Record<string, any> = { en, lt };
-  const dict = DICT[locale] ?? DICT[DEFAULT_LOCALE];
-  const t = (key: string, fallback?: string) => {
-    const parts = key.split(".");
-    let cur: any = dict;
-    for (const p of parts) {
-      if (cur && typeof cur === "object" && p in cur) cur = cur[p];
-      else {
-        // fallback to default language
-        let dcur: any = en;
-        for (const pp of parts) {
-          if (dcur && typeof dcur === "object" && pp in dcur) dcur = dcur[pp];
-          else {
-            dcur = undefined;
-            break;
-          }
-        }
-        if (typeof dcur === "string") return dcur;
-        return fallback ?? key;
-      }
-    }
-    return typeof cur === "string" ? cur : fallback ?? key;
-  };
+  const dict = await getDictionary();
+  const t = (key: string, fallback?: string) => serverT(dict, key, fallback);
 
   return (
     <>
@@ -56,7 +28,7 @@ export default async function ServicesPage() {
 
           <Card className="space-y-3">
             <div className="relative h-40 rounded-2xl overflow-hidden shadow-sm">
-              <Image src="/stock-images/1 (3).jpg" alt="Clinical services" fill loading="eager" className="object-cover" />
+              <Image src="/stock-images/1 (3).jpg" alt={t("services.mediaAlt.clinicalServices", "Clinical services")} fill loading="eager" className="object-cover" />
             </div>
 
             <ul className="grid gap-2 text-sm leading-6 text-[var(--color-ink-700)]">
@@ -91,27 +63,27 @@ export default async function ServicesPage() {
                 desc: t("services.items.generalConsultationDesc"),
               },
               {
-                title: t("services.emergencyCare" ) ?? "Emergency Care",
+                title: t("services.emergencyCare"),
                 icon: "warning",
                 desc: t("services.items.emergencyCareDesc"),
               },
               {
-                title: t("services.surgicalServices") ?? "Surgical Services",
+                title: t("services.surgicalServices"),
                 icon: "building-2",
                 desc: t("services.items.surgicalServicesDesc"),
               },
               {
-                title: t("services.diagnosticImaging") ?? "Diagnostic Imaging",
+                title: t("services.diagnosticImaging"),
                 icon: "layout-grid",
                 desc: t("services.items.diagnosticImagingDesc"),
               },
               {
-                title: t("services.laboratoryTesting") ?? "Laboratory Testing",
+                title: t("services.laboratoryTesting"),
                 icon: "clipboard-list",
                 desc: t("services.items.laboratoryTestingDesc"),
               },
               {
-                title: t("services.inpatient") ?? "Inpatient Care",
+                title: t("services.inpatient"),
                 icon: "user-round",
                 desc: t("services.items.inpatientCareDesc"),
               },
@@ -138,10 +110,10 @@ export default async function ServicesPage() {
             <h2 className="text-2xl font-semibold text-[var(--color-ink-900)]">{t("services.diagnosticsTitle")}</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--color-ink-700)]">{t("services.diagnosticsDescription")}</p>
             <ul className="mt-3 grid gap-2 text-sm text-[var(--color-ink-700)]">
-              <li>Continuous patient monitoring and telemetry</li>
-              <li>Imaging coordination: X‑ray, CT, MRI, ultrasound</li>
-              <li>Rapid lab turnaround and integrated results</li>
-              <li>Pre- and post-procedure observation and assessment</li>
+              <li>{t("services.diagnosticsBullets.monitoring")}</li>
+              <li>{t("services.diagnosticsBullets.imaging")}</li>
+              <li>{t("services.diagnosticsBullets.labs")}</li>
+              <li>{t("services.diagnosticsBullets.observation")}</li>
             </ul>
             <div className="mt-3">
               <LinkButton href="/contact" variant="outline" size="sm">{t("services.contactDiagnostics")}</LinkButton>
@@ -150,9 +122,9 @@ export default async function ServicesPage() {
 
           <ServiceMediaGallery
             images={[
-              { src: "/stock-images/1 (5).jpg", alt: "Patient monitor" },
-              { src: "/stock-images/1 (6).jpg", alt: "Bedside monitor" },
-              { src: "/stock-images/1 (3).jpg", alt: "Clinical staff" },
+              { src: "/stock-images/1 (5).jpg", alt: t("services.mediaAlt.patientMonitor") },
+              { src: "/stock-images/1 (6).jpg", alt: t("services.mediaAlt.bedsideMonitor") },
+              { src: "/stock-images/1 (3).jpg", alt: t("services.mediaAlt.clinicalStaff") },
             ]}
           />
         </div>
@@ -162,9 +134,9 @@ export default async function ServicesPage() {
         <div className="layout-container grid gap-6 lg:grid-cols-2 lg:items-center">
           <ServiceMediaGallery
             images={[
-              { src: "/stock-images/1 (7).jpg", alt: "Operating room" },
-              { src: "/stock-images/1 (4).jpg", alt: "Clinician" },
-              { src: "/stock-images/1 (6).jpg", alt: "Equipment" },
+              { src: "/stock-images/1 (7).jpg", alt: t("services.mediaAlt.operatingRoom") },
+              { src: "/stock-images/1 (4).jpg", alt: t("services.mediaAlt.clinician") },
+              { src: "/stock-images/1 (6).jpg", alt: t("services.mediaAlt.equipment") },
             ]}
           />
 
@@ -172,9 +144,9 @@ export default async function ServicesPage() {
             <h2 className="text-2xl font-semibold text-[var(--color-ink-900)]">{t("services.surgicalTitle")}</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--color-ink-700)]">{t("services.surgicalDescription")}</p>
             <ul className="mt-3 grid gap-2 text-sm text-[var(--color-ink-700)]">
-              <li>Pre-procedure assessment and patient preparation</li>
-              <li>Dedicated operating suites and perioperative teams</li>
-              <li>Post-operative monitoring and tailored recovery plans</li>
+              <li>{t("services.surgicalBullets.assessment")}</li>
+              <li>{t("services.surgicalBullets.suites")}</li>
+              <li>{t("services.surgicalBullets.recovery")}</li>
             </ul>
             <div className="mt-3">
               <LinkButton href="/book">{t("common.bookAppointment")}</LinkButton>
@@ -193,9 +165,9 @@ export default async function ServicesPage() {
 
           <ServiceMediaGallery
               images={[
-                { src: "/stock-images/1 (10).jpg", alt: "Nurse checking patient" },
-                { src: "/stock-images/1 (1).jpg", alt: "Patient room" },
-                { src: "/stock-images/1 (8).jpg", alt: "Rehab and recovery" },
+                { src: "/stock-images/1 (10).jpg", alt: t("services.mediaAlt.nurseCheckingPatient") },
+                { src: "/stock-images/1 (1).jpg", alt: t("services.mediaAlt.patientRoom") },
+                { src: "/stock-images/1 (8).jpg", alt: t("services.mediaAlt.rehabRecovery") },
               ]}
             />
         </div>

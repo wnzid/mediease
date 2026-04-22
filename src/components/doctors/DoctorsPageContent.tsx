@@ -6,6 +6,7 @@ import { getDoctors, getClinics } from "@/lib/data/supabase";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { filterDoctors } from "@/features/doctors/filter-doctors";
 import { getDictionary, t as serverT } from "@/lib/i18n/server";
+import { localizeSpecialty } from "@/lib/i18n/labels";
 
 export default async function DoctorsPageContent({
   searchParams,
@@ -44,13 +45,13 @@ export default async function DoctorsPageContent({
       <section className="grid gap-6 pb-12">
         <form className="flex flex-wrap items-center gap-3 rounded-full px-2 py-1">
           <div className="flex-1 min-w-0 md:max-w-[30rem]">
-            <SearchBar name="query" defaultValue={query} className="h-9 rounded-full pl-9 text-sm" />
+            <SearchBar name="query" label={serverT(dict, "common.search", "Search")} defaultValue={query} className="h-9 rounded-full pl-9 text-sm" />
           </div>
 
           <select name="specialty" defaultValue={specialty} className="h-9 rounded-full border border-[var(--color-panel-border)] px-2 text-sm">
             <option value="all">{serverT(dict, "doctors.find.allSpecialties", "All specialties")}</option>
             {specialties.map((item) => (
-              <option key={item} value={item}>{item}</option>
+              <option key={item} value={item}>{localizeSpecialty((key, fallback) => serverT(dict, key, fallback), item)}</option>
             ))}
           </select>
 

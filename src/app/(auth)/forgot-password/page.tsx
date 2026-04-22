@@ -12,18 +12,17 @@ export async function generateMetadata() {
 }
 
 export default async function ForgotPasswordPage() {
-  const dict = await getDictionary();
   return (
     <AuthFormShell
-      eyebrow={t(dict, "auth.forgot.eyebrow", "Password support")}
-      title={t(dict, "auth.forgot.title", "Reset your password")}
-      description={t(
-        dict,
-        "auth.forgot.description",
-        "Enter the email linked to your account and we will guide you through the next step.",
-      )}
+      eyebrowKey="auth.forgot.eyebrow"
+      eyebrow="Password support"
+      titleKey="auth.forgot.title"
+      title="Reset your password"
+      descriptionKey="auth.forgot.description"
+      description="Enter the email linked to your account and we will guide you through the next step."
       alternateHref="/sign-in"
-      alternateLabel={t(dict, "auth.backToSignIn", "Back to sign in")}
+      alternateLabelKey="auth.backToSignIn"
+      alternateLabel="Back to sign in"
       compact
     >
       <ForgotPasswordForm />

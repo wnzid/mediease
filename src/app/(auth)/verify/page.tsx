@@ -22,14 +22,18 @@ export default async function VerifyPage({
 
   return (
     <AuthFormShell
+      eyebrowKey="auth.verify.eyebrow"
       eyebrow={t(dict, "auth.verify.eyebrow", "Check your inbox")}
+      titleKey="auth.verify.title"
       title={t(dict, "auth.verify.title", "Verify your email address")}
+      descriptionKey="auth.verify.description"
       description={t(
         dict,
         "auth.verify.description",
         "We've prepared the rest of your onboarding. Verification is the final step before your role workspace becomes available.",
       )}
       alternateHref="/sign-in"
+      alternateLabelKey="auth.backToSignIn"
       alternateLabel={t(dict, "auth.backToSignIn", "Return to sign in")}
       compact
     >

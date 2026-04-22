@@ -39,7 +39,7 @@ export async function signInAction(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       success: false,
-      message: "Please correct the highlighted fields.",
+      message: "auth.messages.correctHighlightedFields",
       fieldErrors,
     };
   }
@@ -49,7 +49,7 @@ export async function signInAction(
   if (!isSupabaseConfigured()) {
     return {
       success: false,
-      message: "Supabase is not configured. Please configure Supabase to sign in.",
+      message: "auth.messages.supabaseNotConfiguredSignIn",
     };
   }
 
@@ -57,7 +57,7 @@ export async function signInAction(
   if (!supabase) {
     return {
       success: false,
-      message: "Supabase is not configured. Please add Supabase environment variables.",
+      message: "auth.messages.supabaseEnvMissing",
     };
   }
 
@@ -79,7 +79,7 @@ export async function signInAction(
   if (error || !data.user) {
     return {
       success: false,
-      message: error?.message ?? "We could not sign you in. Please check your credentials.",
+      message: error?.message ?? "auth.messages.signInFailedCredentials",
     };
   }
 
@@ -136,7 +136,7 @@ export async function signInAction(
 
   return {
     success: true,
-    message: "Welcome back.",
+    message: "auth.messages.welcomeBack",
     redirectTo: next || getRoleRedirect(role),
   };
 }
@@ -155,7 +155,7 @@ export async function signInInternalAction(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       success: false,
-      message: "Please correct the highlighted fields.",
+      message: "auth.messages.correctHighlightedFields",
       fieldErrors,
     };
   }
@@ -163,7 +163,7 @@ export async function signInInternalAction(
   if (!isSupabaseConfigured()) {
     return {
       success: false,
-      message: "Supabase is not configured. Please configure Supabase to sign in.",
+      message: "auth.messages.supabaseNotConfiguredSignIn",
     };
   }
 
@@ -171,7 +171,7 @@ export async function signInInternalAction(
   if (!supabase) {
     return {
       success: false,
-      message: "Supabase is not configured. Please add Supabase environment variables.",
+      message: "auth.messages.supabaseEnvMissing",
     };
   }
 
@@ -183,7 +183,7 @@ export async function signInInternalAction(
   if (error || !data.user) {
     return {
       success: false,
-      message: error?.message ?? "We could not sign you in. Please check your credentials.",
+      message: error?.message ?? "auth.messages.signInFailedCredentials",
     };
   }
 
@@ -210,7 +210,7 @@ export async function signInInternalAction(
   if (!["doctor", "staff", "admin"].includes(role)) {
     return {
       success: false,
-      message: "This login is for internal staff and clinicians only. Use the patient sign-in page.",
+      message: "auth.messages.internalOnly",
     };
   }
 
@@ -226,7 +226,7 @@ export async function signInInternalAction(
 
   return {
     success: true,
-    message: "Welcome back.",
+    message: "auth.messages.welcomeBack",
     redirectTo: next || getRoleRedirect(role),
   };
 }
@@ -252,7 +252,7 @@ export async function signUpAction(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       success: false,
-      message: "Please correct the highlighted fields.",
+      message: "auth.messages.correctHighlightedFields",
       fieldErrors,
     };
   }
@@ -260,7 +260,7 @@ export async function signUpAction(
   if (!isSupabaseConfigured()) {
     return {
       success: false,
-      message: "Supabase is not configured. Please configure Supabase to sign up.",
+      message: "auth.messages.supabaseNotConfiguredSignUp",
     };
   }
 
@@ -268,7 +268,7 @@ export async function signUpAction(
   if (!supabase) {
     return {
       success: false,
-      message: "Supabase is not configured.",
+      message: "auth.messages.supabaseNotConfigured",
     };
   }
 
@@ -306,7 +306,7 @@ export async function signUpAction(
 
   return {
     success: true,
-    message: "Account created. Please check your inbox to verify your email.",
+    message: "auth.messages.accountCreatedVerifyEmail",
     redirectTo: `/verify?email=${encodeURIComponent(fields.email)}`,
   };
 }
@@ -325,7 +325,7 @@ export async function forgotPasswordAction(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       success: false,
-      message: "Enter a valid email address.",
+      message: "forms.invalidEmail",
       fieldErrors,
     };
   }
@@ -333,7 +333,7 @@ export async function forgotPasswordAction(
   if (!isSupabaseConfigured()) {
     return {
       success: false,
-      message: "Supabase is not configured.",
+      message: "auth.messages.supabaseNotConfigured",
     };
   }
 
@@ -341,7 +341,7 @@ export async function forgotPasswordAction(
   if (!supabase) {
     return {
       success: false,
-      message: "Supabase is not configured.",
+      message: "auth.messages.supabaseNotConfigured",
     };
   }
 
@@ -351,7 +351,7 @@ export async function forgotPasswordAction(
 
   return {
     success: !error,
-    message: error ? error.message : "Password reset instructions have been sent if the account exists.",
+    message: error ? error.message : "auth.messages.passwordResetSent",
   };
 }
 
@@ -368,7 +368,7 @@ export async function resetPasswordAction(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       success: false,
-      message: "Please review the new password fields.",
+      message: "auth.messages.reviewNewPasswordFields",
       fieldErrors,
     };
   }
@@ -376,7 +376,7 @@ export async function resetPasswordAction(
   if (!isSupabaseConfigured()) {
     return {
       success: false,
-      message: "Supabase is not configured.",
+      message: "auth.messages.supabaseNotConfigured",
     };
   }
 
@@ -384,7 +384,7 @@ export async function resetPasswordAction(
   if (!supabase) {
     return {
       success: false,
-      message: "Supabase is not configured.",
+      message: "auth.messages.supabaseNotConfigured",
     };
   }
 
@@ -394,7 +394,7 @@ export async function resetPasswordAction(
 
   return {
     success: !error,
-    message: error ? error.message : "Password updated successfully.",
+    message: error ? error.message : "auth.messages.passwordUpdated",
     redirectTo: error ? undefined : "/sign-in",
   };
 }

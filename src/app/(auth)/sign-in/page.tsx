@@ -12,15 +12,18 @@ export async function generateMetadata() {
 }
 
 export default async function SignInPage() {
-  const dict = await getDictionary();
   return (
     <AuthFormShell
       showBack
-      eyebrow={t(dict, "auth.signInPage.eyebrow", "Welcome back")}
-      title={t(dict, "auth.signInPage.title", "Sign in to MediEase")}
-      description={t(dict, "auth.signInPage.description", "")}
+      eyebrowKey="auth.signInPage.eyebrow"
+      eyebrow="Welcome back"
+      titleKey="auth.signInPage.title"
+      title="Sign in to MediEase"
+      descriptionKey="auth.signInPage.description"
+      description=""
       alternateHref="/sign-up"
-      alternateLabel={t(dict, "auth.createPatientAccount", "Create a patient account")}
+      alternateLabelKey="auth.createPatientAccount"
+      alternateLabel="Create a patient account"
     >
       <SignInForm />
     </AuthFormShell>

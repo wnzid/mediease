@@ -12,15 +12,18 @@ export async function generateMetadata() {
 }
 
 export default async function SignUpPage() {
-  const dict = await getDictionary();
   return (
     <AuthFormShell
       showBack
-      eyebrow={t(dict, "auth.signUpPage.eyebrow", "")}
-      title={t(dict, "auth.signUpPage.title", "Create your MediEase account")}
-      description={t(dict, "auth.signUpPage.description", "")}
+      eyebrowKey="auth.signUpPage.eyebrow"
+      eyebrow=""
+      titleKey="auth.signUpPage.title"
+      title="Create your MediEase account"
+      descriptionKey="auth.signUpPage.description"
+      description=""
       alternateHref="/sign-in"
-      alternateLabel={t(dict, "auth.alreadyHaveAccount", "Already have an account? Sign in")}
+      alternateLabelKey="auth.alreadyHaveAccount"
+      alternateLabel="Already have an account? Sign in"
     >
       <SignUpForm />
     </AuthFormShell>
