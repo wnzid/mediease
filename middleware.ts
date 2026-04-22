@@ -16,14 +16,10 @@ export async function middleware(request: NextRequest) {
   const roleCookie = request.cookies.get(ROLE_COOKIE)?.value;
   const isAuthenticated = Boolean(userId || roleCookie);
 
-  // Special-case: do NOT clear or downgrade authenticated users on the public homepage.
-  // If a valid role cookie exists, redirect them to their role home instead of resetting session.
-  if (pathname === "/") {
-    if (isAuthenticated && roleCookie && roleCookie !== "guest") {
-      return NextResponse.redirect(new URL(getRoleRedirect(roleCookie as Parameters<typeof getRoleRedirect>[0]), request.url));
-    }
-    // Preserve the response without mutating or clearing cookies for anonymous visitors.
-  }
+  // Allow authenticated users to view the public homepage (`/`).
+  // Previously we redirected authenticated visitors away from `/` to their role home.
+  // That behavior was blocking legitimate access to the marketing landing page from inside the app.
+  // Intentionally do not redirect here; keep the response intact so `/` can render for authenticated users.
 
   if (isAuthRoute && isAuthenticated && roleCookie && roleCookie !== "guest") {
     return NextResponse.redirect(new URL(getRoleRedirect(roleCookie as Parameters<typeof getRoleRedirect>[0]), request.url));
