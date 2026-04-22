@@ -261,20 +261,6 @@ pnpm install && pnpm dev
 6. Verify auth flows
 7. Test the patient booking and onboarding journey
 
-## Suggested future improvements
-
-Planned or useful next improvements for the project include:
-
-- full bilingual support in English and Lithuanian
-- stronger empty states across dashboards
-- deeper real-data integration on all workspaces
-- appointment management improvements
-- prescriptions and clinical record views
-- better document management
-- richer doctor/staff/admin workflows
-- analytics and reporting refinement
-- stronger production-grade validation and audit logging
-
 ## HCI relevance
 
 This project was created in the context of a Human-Computer Interaction practical assignment. It is suitable for demonstrating:
@@ -286,17 +272,6 @@ This project was created in the context of a Human-Computer Interaction practica
 - error prevention and user control
 - multi-role interface design
 
-## Repository notes
-
-If this README is used in the final repository, consider adding these later if they are available:
-
-- project screenshots
-- hosted project link
-- GitHub Pages/Vercel deployment link
-- database schema reference
-- demo credentials for test roles
-- presentation or report links
-
 ## Author
 
 **Md Nahidul Islam**  
@@ -304,4 +279,4 @@ Software Engineering student
 
 ---
 
-If needed, this README can be expanded later with screenshots, installation scripts, database schema details, and deployment instructions.
+
