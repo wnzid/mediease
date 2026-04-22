@@ -7,6 +7,7 @@ import { Button, LinkButton } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { RoleSidebar } from "@/components/layout/RoleSidebar";
 import { Logo } from "@/components/layout/Logo";
+import { roleHomePaths } from "@/lib/constants/navigation";
 import { AccountDropdown } from "@/components/layout/AccountDropdown";
 import { useLocale } from "@/lib/i18n/useLocale";
 // role labels are intentionally omitted from the topbar to reduce redundancy
@@ -42,11 +43,11 @@ export function AppTopbar({
               <Icon name="menu" className="h-[18px] w-[18px]" aria-hidden />
               <span className="sr-only">Open navigation</span>
             </Button>
-            <LinkButton href="/" aria-label="Go home" variant="ghost" size="icon-sm" className="inline-flex items-center">
+            <LinkButton href={roleHomePaths[role] ?? "/"} aria-label="Go home" variant="ghost" size="icon-sm" className="inline-flex items-center">
               <Icon name="home" className="h-[18px] w-[18px]" aria-hidden />
               <span className="sr-only">Go home</span>
             </LinkButton>
-            <Link href="/" aria-label="MediEase home" className="inline-flex lg:hidden items-center h-[var(--layout-header-height)] cursor-pointer">
+            <Link href={roleHomePaths[role] ?? "/"} aria-label="MediEase home" className="inline-flex lg:hidden items-center h-[var(--layout-header-height)] cursor-pointer">
               <Logo variant="icon" size="md" />
             </Link>
             <div className="min-w-0 hidden lg:flex lg:items-center">
@@ -62,7 +63,7 @@ export function AppTopbar({
 
                 if (isLogoElement) {
                   return (
-                    <Link href="/" aria-label="MediEase home" className="min-w-0 inline-flex items-center h-[var(--layout-header-height)] cursor-pointer">
+                    <Link href={roleHomePaths[role] ?? "/"} aria-label="MediEase home" className="min-w-0 inline-flex items-center h-[var(--layout-header-height)] cursor-pointer">
                       {heading}
                     </Link>
                   );
