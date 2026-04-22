@@ -9,7 +9,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const requestedRole = resolveRoleFromPath(pathname);
   const isAuthRoute = authRoutes.some((route) => pathname === route);
-  const isPublicRoute = publicRoutes.some((route) => pathname === route);
+  const isPublicDoctorsOrBook = pathname.startsWith("/doctors") || pathname.startsWith("/book");
+  const isPublicRoute = publicRoutes.some((route) => pathname === route) || isPublicDoctorsOrBook;
 
   const { response, userId } = await updateSupabaseSession(request);
   const roleCookie = request.cookies.get(ROLE_COOKIE)?.value;
