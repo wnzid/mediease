@@ -48,7 +48,7 @@ type SupportDoctor = {
   phone?: string;
 };
 
-export function HeaderSummary({
+export async function HeaderSummary({
   patientName,
   patientId,
   age,
@@ -59,7 +59,7 @@ export function HeaderSummary({
   age?: number | string;
   summary?: string;
 }) {
-  const dict = getDictionary();
+  const dict = await getDictionary();
   // If no identifying props or a summary are provided, don't render an empty header.
   if (patientName === undefined && patientId === undefined && age === undefined && summary === undefined) return null;
 
@@ -80,7 +80,7 @@ export function HeaderSummary({
   );
 }
 
-export function ActionCenter({
+export async function ActionCenter({
   profileCompletion,
   medicalSummary,
   reminders,
@@ -92,7 +92,7 @@ export function ActionCenter({
   const tasks: Array<Required<Pick<ReminderItem, "title">> & { id: string; detail?: string; href?: string; icon?: string }> = [];
 
   if (typeof profileCompletion === "number" && profileCompletion < 80) {
-    const dict = getDictionary();
+    const dict = await getDictionary();
     tasks.push({
       id: "profile",
       title: serverT(dict, "patient.dashboard.tasks.completeProfile", "Complete your profile"),
@@ -107,7 +107,7 @@ export function ActionCenter({
     !((medicalSummary.allergies?.length ?? 0) || (medicalSummary.conditions?.length ?? 0) || (medicalSummary.medications?.length ?? 0));
 
   if (medEmpty) {
-    const dict = getDictionary();
+    const dict = await getDictionary();
     tasks.push({
       id: "medical",
       title: serverT(dict, "patient.dashboard.tasks.addMedicalSummary", "Add your medical summary"),
@@ -129,7 +129,7 @@ export function ActionCenter({
     );
   }
 
-  const dict = getDictionary();
+  const dict = await getDictionary();
 
   return (
     <Card className="border-[var(--color-brand-100)] bg-[var(--color-brand-50)]">
@@ -185,7 +185,7 @@ export function ActionCenter({
   );
 }
 
-export function HealthSnapshot({
+export async function HealthSnapshot({
   prescriptions,
   tests,
   messages,
@@ -194,7 +194,7 @@ export function HealthSnapshot({
   tests?: number;
   messages?: number;
 }) {
-  const dict = getDictionary();
+  const dict = await getDictionary();
   const rows = [
     { id: "pres", label: serverT(dict, "patient.dashboard.healthSnapshot.prescriptions", "Active prescriptions"), value: prescriptions, icon: "clipboard-list", href: "/patient/documents" },
     { id: "tests", label: serverT(dict, "patient.dashboard.healthSnapshot.tests", "Test results"), value: tests, icon: "file-text", href: "/patient/documents" },
@@ -237,8 +237,8 @@ export function HealthSnapshot({
   );
 }
 
-export function NextAppointment({ appointment }: { appointment?: AppointmentSummary | null }) {
-  const dict = getDictionary();
+export async function NextAppointment({ appointment }: { appointment?: AppointmentSummary | null }) {
+  const dict = await getDictionary();
 
   return (
     <Card>
@@ -292,10 +292,10 @@ export function NextAppointment({ appointment }: { appointment?: AppointmentSumm
   );
 }
 
-export function RecentActivity({ items = [] }: { items?: ActivityItem[] }) {
+export async function RecentActivity({ items = [] }: { items?: ActivityItem[] }) {
   const list = Array.isArray(items) ? items.slice(0, 5) : [];
 
-  const dict = getDictionary();
+  const dict = await getDictionary();
 
   return (
     <Card>
@@ -325,7 +325,7 @@ export function RecentActivity({ items = [] }: { items?: ActivityItem[] }) {
   );
 }
 
-export function CareTeamSupport({
+export async function CareTeamSupport({
   clinic,
   doctors = [],
 }: {
@@ -337,7 +337,7 @@ export function CareTeamSupport({
 
   if (!hasClinic && !hasDoctors) return null;
 
-  const dict = getDictionary();
+  const dict = await getDictionary();
 
   return (
     <Card>

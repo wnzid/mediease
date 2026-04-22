@@ -41,6 +41,10 @@ export function AppTopbar({
               <Icon name="menu" className="h-[18px] w-[18px]" aria-hidden />
               <span className="sr-only">Open navigation</span>
             </Button>
+            <LinkButton href="/" aria-label="Go home" variant="ghost" size="icon-sm" className="inline-flex items-center">
+              <Icon name="home" className="h-[18px] w-[18px]" aria-hidden />
+              <span className="sr-only">Go home</span>
+            </LinkButton>
             <Link href="/" aria-label="MediEase home" className="inline-flex lg:hidden items-center h-[var(--layout-header-height)] cursor-pointer">
               <Logo variant="icon" size="md" />
             </Link>

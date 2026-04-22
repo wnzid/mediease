@@ -8,7 +8,7 @@ import createServiceSupabaseClient from "@/lib/supabase/admin";
 import { getDictionary, t as serverT } from "@/lib/i18n/server";
 
 export default async function PatientAppointmentsPage() {
-  const dict = getDictionary();
+  const dict = await getDictionary();
   const session = await getSessionContext();
   if (!session.user) {
     return (

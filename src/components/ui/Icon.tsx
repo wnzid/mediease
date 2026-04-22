@@ -178,6 +178,11 @@ function IconShape({ name, filled = false }: { name: string } & SvgIconProps) {
       </>;
     case "chevron-right":
       return <path d="m9 6 6 6-6 6" {...common} />;
+    case "home":
+      return <>
+        <path d="M3 11.5 12 4l9 7.5" {...common} />
+        <path d="M5 12v7a1 1 0 0 0 1 1h3v-5h6v5h3a1 1 0 0 0 1-1v-7" {...common} />
+      </>;
     case "close":
       return <>
         <path d="M6 6l12 12" {...common} />
