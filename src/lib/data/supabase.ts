@@ -188,15 +188,78 @@ export async function getAppointmentsForDoctor(doctorId: string): Promise<Appoin
 }
 
 export async function getAppointmentsForPatient(profileId: string): Promise<Appointment[]> {
-  const data = await clientOrEmpty(async () => {
+  try {
     const supabase = await createServerSupabaseClient();
-    if (!supabase) return [] as Appointment[];
-    // Appointments reference patient_profiles.id (which equals profiles.id). Query directly.
-    const { data } = await supabase.from("appointments").select("*").eq("patient_id", profileId).order("starts_at", { ascending: false });
-    return (data ?? []).map(mapAppointmentRowToCamel) as Appointment[];
-  });
+    if (!supabase) {
+      return [] as Appointment[];
+    }
 
-  return data ?? [];
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("patient_id", profileId)
+      .order("starts_at", { ascending: false });
+
+    if (error) {
+      return [] as Appointment[];
+    }
+
+    const rows = (data ?? []).map(mapAppointmentRowToCamel) as Appointment[];
+    return rows;
+  } catch (err) {
+    // unexpected error - return empty
+    return [] as Appointment[];
+  }
+}
+
+// Temporary debug helper: query appointments using service-role client to compare results (for RLS debugging)
+export async function getAppointmentsForPatientService(profileId: string): Promise<Appointment[]> {
+  try {
+    const service = createServiceSupabaseClient();
+    if (!service) {
+      return [] as Appointment[];
+    }
+
+    const { data, error } = await service
+      .from("appointments")
+      .select("*")
+      .eq("patient_id", profileId)
+      .order("starts_at", { ascending: false });
+
+    if (error) {
+      return [] as Appointment[];
+    }
+
+    const rows = (data ?? []).map(mapAppointmentRowToCamel) as Appointment[];
+    return rows;
+  } catch (err) {
+    // unexpected error - return empty
+    return [] as Appointment[];
+  }
+}
+
+// Dedicated helper for the patient appointments page. Uses the service-role client
+// to return all appointments for a given profile id (includes pending, confirmed, etc.).
+export async function getAppointmentsForPatientByProfileId(profileId: string): Promise<Appointment[]> {
+  try {
+    const service = createServiceSupabaseClient();
+    if (!service) return [] as Appointment[];
+
+    const { data, error } = await service
+      .from("appointments")
+      .select("*")
+      .eq("patient_id", profileId)
+      .order("starts_at", { ascending: false });
+
+    if (error) {
+      return [] as Appointment[];
+    }
+
+    return (data ?? []).map(mapAppointmentRowToCamel) as Appointment[];
+  } catch (err) {
+    // unexpected error - return empty
+    return [] as Appointment[];
+  }
 }
 
 export async function getAppointmentById(id: string): Promise<Appointment | null> {
@@ -233,11 +296,18 @@ export async function getProfiles(): Promise<any[]> {
 }
 
 export async function getAppointmentStatusCounts(): Promise<Record<string, number>> {
-  const rows = await clientOrEmpty(async () => {
+  const result = await clientOrEmpty(async () => {
     const supabase = await createServerSupabaseClient();
     if (!supabase) return [] as any[];
     const { data } = await supabase.from("appointments").select("status");
-    return (direct ?? []).map(mapAppointmentRowToCamel) as Appointment[];
+    return (data ?? []) as any[];
+  });
+
+  const rows = result ?? [];
+  const counts: Record<string, number> = {};
+  rows.forEach((r: any) => {
+    const s = r?.status ?? "unknown";
+    counts[s] = (counts[s] ?? 0) + 1;
   });
 
   return counts;
@@ -299,38 +369,7 @@ export async function getDoctorAvailability(doctorId: string, fromDate?: string,
 
   return data ?? [];
 }
-
-export async function getAvailabilityByDoctorAndDate(doctorId: string, date: string): Promise<DoctorAvailability | null> {
-  const data = await clientOrEmpty(async () => {
-    const supabase = await createServerSupabaseClient();
-    if (!supabase) return null;
-    const { data: row } = await supabase
-      .from("doctor_availability")
-      .select("*")
-      .eq("doctor_id", doctorId)
-      .eq("availability_date", date)
-      .maybeSingle();
-
-    if (!row) return null;
-    const mapped: DoctorAvailability = {
-      id: row.id,
-      doctorId: row.doctor_id,
-      availabilityDate: row.availability_date,
-      startTime: row.start_time,
-      endTime: row.end_time,
-      slotDurationMinutes: row.slot_duration_minutes,
-      appointmentMode: row.appointment_mode,
-      isActive: Boolean(row.is_active),
-      notes: row.notes ?? null,
-      createdAt: row.created_at ?? null,
-      updatedAt: row.updated_at ?? null,
-    };
-
-    return mapped;
-  });
-
-  return data ?? null;
-}
+ 
 
 export async function getBookedAppointmentsForDoctorAndDate(doctorId: string, date: string): Promise<Appointment[]> {
   const data = await clientOrEmpty(async () => {
@@ -414,7 +453,12 @@ export async function getAvailabilityByDoctorAndDateService(doctorId: string, da
   try {
     const service = createServiceSupabaseClient();
     if (!service) return null;
-    const { data: row, error } = await service.from("doctor_availability").select("*").eq("doctor_id", doctorId).eq("availability_date", date).maybeSingle();
+    const { data: row, error } = await service
+      .from("doctor_availability")
+      .select("*")
+      .eq("doctor_id", doctorId)
+      .eq("availability_date", date)
+      .maybeSingle();
     if (error) throw error;
     if (!row) return null;
     return {
@@ -433,6 +477,43 @@ export async function getAvailabilityByDoctorAndDateService(doctorId: string, da
   } catch (err) {
     throw err;
   }
+}
+
+export async function getAvailabilityByDoctorAndDate(
+  doctorId: string,
+  date: string
+): Promise<DoctorAvailability | null> {
+  const data = await clientOrEmpty(async () => {
+    const supabase = await createServerSupabaseClient();
+    if (!supabase) return null;
+
+    const { data: row } = await supabase
+      .from("doctor_availability")
+      .select("*")
+      .eq("doctor_id", doctorId)
+      .eq("availability_date", date)
+      .maybeSingle();
+
+    if (!row) return null;
+
+    const mapped: DoctorAvailability = {
+      id: row.id,
+      doctorId: row.doctor_id,
+      availabilityDate: row.availability_date,
+      startTime: row.start_time,
+      endTime: row.end_time,
+      slotDurationMinutes: row.slot_duration_minutes,
+      appointmentMode: row.appointment_mode,
+      isActive: Boolean(row.is_active),
+      notes: row.notes ?? null,
+      createdAt: row.created_at ?? null,
+      updatedAt: row.updated_at ?? null,
+    };
+
+    return mapped;
+  });
+
+  return data ?? null;
 }
 
 export async function getBookedAppointmentsForDoctorAndDateService(doctorId: string, date: string): Promise<Appointment[]> {

@@ -1,9 +1,10 @@
 import { AppointmentCard } from "@/components/appointments/AppointmentCard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getAppointmentsForPatient, getDoctorById, getClinicById } from "@/lib/data/supabase";
+import { getAppointmentsForPatientByProfileId, getDoctorById, getClinicById } from "@/lib/data/supabase";
 import { getSessionContext } from "@/lib/auth/session";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import createServiceSupabaseClient from "@/lib/supabase/admin";
 
 export default async function PatientAppointmentsPage() {
   const session = await getSessionContext();
@@ -16,34 +17,67 @@ export default async function PatientAppointmentsPage() {
     );
   }
 
-  // Resolve the canonical profile id for this session user. The auth user id may not equal profiles.id.
+  // Resolve canonical profile id by email (session -> profiles.email -> profiles.id)
+  const userEmail = (session.user.email ?? "").trim().toLowerCase();
+  if (!userEmail) {
+    return (
+      <>
+        <PageHeader title="Appointments" description="Track upcoming visits, revisit past appointments, and open each visit for more details." />
+        <EmptyState icon="calendar_month" title="No appointments yet" description="No email found on your account. Please contact support." actionLabel="Book an appointment" actionHref="/patient/book" />
+      </>
+    );
+  }
+
+  // 1) Try to resolve the profile id by email using the server client
   let resolvedProfileId: string | null = null;
   try {
     const supabase = await createServerSupabaseClient();
-    if (supabase && session.user) {
-      const uid = session.user.id;
-      const email = session.user.email ?? null;
-
-      // 1) Try profiles.id == uid
-      const byId = await supabase.from("profiles").select("id").eq("id", uid).maybeSingle();
-      if (byId?.data?.id) resolvedProfileId = byId.data.id;
-      else {
-        // 2) Try profiles.auth_user_id == uid
-        const byAuth = await supabase.from("profiles").select("id").eq("auth_user_id", uid).maybeSingle();
-        if (byAuth?.data?.id) resolvedProfileId = byAuth.data.id;
-        else if (email) {
-          // 3) Fallback to email match
-          const byEmail = await supabase.from("profiles").select("id").eq("email", email).maybeSingle();
-          if (byEmail?.data?.id) resolvedProfileId = byEmail.data.id;
-        }
-      }
+    if (supabase) {
+      const { data: byEmail } = await supabase.from("profiles").select("id").ilike("email", userEmail).maybeSingle();
+      if (byEmail?.id) resolvedProfileId = byEmail.id;
     }
-  } catch (e) {
-    // best-effort; fall back to session id below
+  } catch {
+    // silent - fallthrough to service lookup
   }
 
-  const patientIdToQuery = resolvedProfileId ?? session.user.id;
-  const patientAppointments = await getAppointmentsForPatient(patientIdToQuery);
+  // 2) Service-role fallback for profile lookup (only if server lookup failed)
+  if (!resolvedProfileId) {
+    try {
+      const svc = createServiceSupabaseClient();
+      if (svc) {
+        const { data: svcByEmail } = await svc.from("profiles").select("id").ilike("email", userEmail).maybeSingle();
+        if (svcByEmail?.id) resolvedProfileId = svcByEmail.id;
+      }
+    } catch {}
+  }
+
+  // If we still can't resolve a profile id, show empty state (do NOT fall back to auth user id)
+  if (!resolvedProfileId) {
+    return (
+      <>
+        <PageHeader title="Appointments" description="Track upcoming visits, revisit past appointments, and open each visit for more details." />
+        <EmptyState icon="calendar_month" title="No appointments yet" description="We couldn't find a profile attached to your account. Contact support if this seems incorrect." actionLabel="Book an appointment" actionHref="/patient/book" />
+      </>
+    );
+  }
+
+  // Fetch appointments for the resolved profile id using the dedicated service helper
+  const patientAppointments = await getAppointmentsForPatientByProfileId(resolvedProfileId);
+
+  // Resolve patient display name for print output (server-side)
+  let patientName = "You";
+  try {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const { data: profileRow } = await supabase.from("profiles").select("full_name").eq("id", resolvedProfileId).maybeSingle();
+      if (profileRow?.full_name) patientName = profileRow.full_name;
+    }
+  } catch {}
+
+  // Group into upcoming and past for a compact, scan-friendly layout
+  const now = new Date();
+  const upcoming = (patientAppointments ?? []).filter((a) => new Date(a.startsAt) >= now).sort((x, y) => new Date(x.startsAt).getTime() - new Date(y.startsAt).getTime());
+  const past = (patientAppointments ?? []).filter((a) => new Date(a.startsAt) < now).sort((x, y) => new Date(y.startsAt).getTime() - new Date(x.startsAt).getTime());
 
   return (
     <>
@@ -51,24 +85,38 @@ export default async function PatientAppointmentsPage() {
         title="Appointments"
         description="Track upcoming visits, revisit past appointments, and open each visit for more details."
       />
-      {patientAppointments.length > 0 ? (
-        <section className="grid gap-5">
-          {await Promise.all(
-            patientAppointments.map(async (appointment) => {
-              const doctor = await getDoctorById(appointment.doctorId);
-              const clinic = await getClinicById(appointment.clinicId);
-              return (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  href={`/patient/appointments/${appointment.id}`}
-                  doctor={doctor ?? undefined}
-                  clinic={clinic ?? undefined}
-                />
-              );
-            }),
-          )}
-        </section>
+      {(upcoming.length > 0 || past.length > 0) ? (
+        <div className="grid gap-6">
+          {upcoming.length > 0 ? (
+            <section>
+              <h3 className="mb-3 text-[0.95rem] font-semibold">Upcoming ({upcoming.length})</h3>
+              <div className="grid gap-3">
+                {await Promise.all(
+                  upcoming.map(async (appointment) => {
+                    const doctor = await getDoctorById(appointment.doctorId);
+                    const clinic = await getClinicById(appointment.clinicId);
+                    return <AppointmentCard key={appointment.id} appointment={appointment} doctor={doctor ?? undefined} clinic={clinic ?? undefined} patientName={patientName} />;
+                  }),
+                )}
+              </div>
+            </section>
+          ) : null}
+
+          {past.length > 0 ? (
+            <section>
+              <h3 className="mb-3 text-[0.95rem] font-semibold">Past ({past.length})</h3>
+              <div className="grid gap-3">
+                {await Promise.all(
+                  past.map(async (appointment) => {
+                    const doctor = await getDoctorById(appointment.doctorId);
+                    const clinic = await getClinicById(appointment.clinicId);
+                    return <AppointmentCard key={appointment.id} appointment={appointment} doctor={doctor ?? undefined} clinic={clinic ?? undefined} patientName={patientName} />;
+                  }),
+                )}
+              </div>
+            </section>
+          ) : null}
+        </div>
       ) : (
         <EmptyState
           icon="calendar_month"
