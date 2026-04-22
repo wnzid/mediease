@@ -16,8 +16,9 @@ import { Textarea } from "@/components/ui/Textarea";
 import { DoctorCard } from "@/components/doctors/DoctorCard";
 import { useToast } from "@/components/providers/ToastProvider";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useLocale } from "@/lib/i18n/useLocale";
 
-const steps = ["Choose doctor", "Visit type", "Date and time", "Reason", "Confirm"];
+// steps are localized inside the component using `t()`
 
 type BookingWizardProps = {
   initialDoctorId?: string;
@@ -30,6 +31,7 @@ type BookingWizardProps = {
 export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appointmentModeOptions, clinics }: BookingWizardProps) {
   const router = useRouter();
   const { addToast } = useToast();
+  const { t } = useLocale();
   const [currentStep, setCurrentStep] = useState(1);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof BookingFields, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof BookingFields, boolean>>>({});
@@ -86,7 +88,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
         const res = await fetch(`/api/doctors/${fields.doctorId}/available-slots?date=${encodeURIComponent(fields.date)}`);
         const data = await res.json();
         if (!res.ok) {
-          setSlotsError(data?.error ?? "Failed to load slots");
+          setSlotsError(data?.error ?? t("errors.failedToLoadSlots", "Failed to load slots"));
         } else {
           const newSlots = (data?.slots ?? []) as any;
           setSlots(newSlots);
@@ -116,7 +118,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           }
         }
       } catch (err) {
-        setSlotsError("Network error");
+        setSlotsError(t("errors.network", "Network error"));
       } finally {
         setSlotsLoading(false);
       }
@@ -149,7 +151,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
         const res = await fetch(`/api/doctors/${fields.doctorId}/availability-summary?start=${start}&end=${end}`);
         const data = await res.json();
         if (!res.ok) {
-          setSummaryError(data?.error ?? "Failed to load availability");
+          setSummaryError(data?.error ?? t("errors.failedToLoadAvailability", "Failed to load availability"));
           setSummaryLoading(false);
           return;
         }
@@ -166,7 +168,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           updateField("date", nearest.date);
         }
       } catch (err) {
-        setSummaryError("Network error");
+        setSummaryError(t("errors.network", "Network error"));
       } finally {
         setSummaryLoading(false);
       }
@@ -254,9 +256,9 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
     }, 60);
   }
 
-  const currentStepErrors = useMemo(() => getStepErrors(currentStep, fields), [currentStep, fields]);
+  const currentStepErrors = useMemo(() => getStepErrors(currentStep, fields, t), [currentStep, fields, t]);
 
-  const isFinalValid = useMemo(() => Object.keys(validateBooking(fields)).length === 0, [fields]);
+  const isFinalValid = useMemo(() => Object.keys(validateBooking(fields, t)).length === 0, [fields, t]);
   const isCurrentStepValid = currentStep === 5 ? isFinalValid : isStepValid(currentStep, fields);
 
   function visibleError(key: keyof BookingFields) {
@@ -325,7 +327,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
   async function goNext() {
     if (submittingRef.current) return;
     // Validate current step before advancing or submitting
-    const stepErrors = getStepErrors(currentStep, fields);
+    const stepErrors = getStepErrors(currentStep, fields, t);
     if (Object.keys(stepErrors).length > 0) {
       setFieldErrors((current) => ({ ...current, ...stepErrors }));
       setTouched((t) => {
@@ -373,17 +375,17 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
         });
         const data = await res.json();
         if (!res.ok || data?.error) {
-          const msg = data?.error ?? "Unable to create appointment.";
+          const msg = data?.error ?? t("errors.unableToCreateAppointment", "Unable to create appointment.");
           const key = `danger|Booking failed|${msg}`;
           if (lastToastKey.current !== key) {
-            addToast({ tone: "danger", title: "Booking failed", description: msg });
+            addToast({ tone: "danger", title: t("patient.booking.errors.bookingFailed", "Booking failed"), description: msg });
             lastToastKey.current = key;
             window.setTimeout(() => (lastToastKey.current = null), 5000);
           }
           return;
         }
 
-        addToast({ tone: "success", title: "Appointment booked", description: "Your appointment request was submitted." });
+        addToast({ tone: "success", title: t("patient.booking.confirmation.toastTitle", "Appointment booked"), description: t("patient.booking.confirmation.toastDescription", "Your appointment request was submitted.") });
         // Use appointment summary returned from API to show confirmation modal
         if (data?.appointment) {
           // Refresh slots and availability so the just-booked slot becomes unavailable immediately
@@ -428,10 +430,10 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           setBookingComplete(true);
         }
       } catch (err) {
-        const msg = "Unexpected server error.";
+        const msg = t("errors.unexpectedServer", "Unexpected server error.");
         const key = `danger|Booking failed|${msg}`;
         if (lastToastKey.current !== key) {
-          addToast({ tone: "danger", title: "Booking failed", description: msg });
+          addToast({ tone: "danger", title: t("patient.booking.errors.bookingFailed", "Booking failed"), description: msg });
           lastToastKey.current = key;
           window.setTimeout(() => (lastToastKey.current = null), 5000);
         }
@@ -450,6 +452,27 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
     setCurrentStep((step) => Math.max(step - 1, 1));
   }
 
+  // localized labels/options
+  const steps = [
+    t("patient.booking.steps.chooseDoctor", "Choose doctor"),
+    t("patient.booking.steps.visitType", "Visit type"),
+    t("patient.booking.steps.dateTime", "Date and time"),
+    t("patient.booking.steps.reason", "Reason"),
+    t("patient.booking.steps.confirm", "Confirm"),
+  ];
+
+  const localizedAppointmentTypes = appointmentTypes.map((o) => ({
+    ...o,
+    label: t(`patient.appointmentCard.typeNames.${o.value}`, o.label),
+    description: t(`patient.booking.typeDescriptions.${o.value}`, o.description),
+  }));
+
+  const localizedAppointmentModes = appointmentModeOptions.map((o) => ({
+    ...o,
+    label: t(`patient.appointmentCard.modeNames.${o.value}`, o.label),
+    description: t(`patient.booking.modeDescriptions.${o.value}`, o.description),
+  }));
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="grid gap-6">
@@ -457,7 +480,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
         <Card>
           <CardHeader
             title={steps[currentStep - 1]}
-            description="Move through the booking flow with clear choices and visible context."
+            description={t("patient.booking.headerDescription", "Move through the booking flow with clear choices and visible context.")}
           />
 
           {currentStep === 1 ? (
@@ -485,8 +508,8 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                 <div className="min-h-[12rem] flex items-center justify-center">
                   <EmptyState
                     icon="search"
-                    title="No doctors are available yet."
-                    description="Please check back later or contact the clinic."
+                    title={t("patient.booking.empty.noDoctors.title", "No doctors are available yet.")}
+                    description={t("patient.booking.empty.noDoctors.description", "Please check back later or contact the clinic.")}
                   />
                 </div>
               )}
@@ -498,7 +521,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
             <div className="grid gap-6">
               <div id="appointmentType">
                 <RadioGroup
-                  label="Appointment type"
+                  label={t("patient.booking.labels.appointmentType", "Appointment type")}
                   name="appointmentType"
                   value={fields.appointmentType}
                   onChange={(value) => {
@@ -506,14 +529,14 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                     setTouched((t) => ({ ...(t ?? {}), appointmentType: true }));
                     setShowAllErrors(false);
                   }}
-                  options={appointmentTypes}
+                  options={localizedAppointmentTypes}
                   columns={2}
                   error={visibleError("appointmentType")}
                 />
               </div>
               <div id="mode">
                 <RadioGroup
-                  label="Visit mode"
+                  label={t("patient.booking.labels.mode", "Visit mode")}
                   name="mode"
                   value={fields.mode}
                   onChange={(value) => {
@@ -521,7 +544,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                     setTouched((t) => ({ ...(t ?? {}), mode: true }));
                     setShowAllErrors(false);
                   }}
-                  options={appointmentModeOptions}
+                  options={localizedAppointmentModes}
                   columns={2}
                   error={visibleError("mode")}
                 />
@@ -532,10 +555,10 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           {currentStep === 3 ? (
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className="text-sm font-medium text-[var(--color-ink-800)]">Preferred date</label>
+                <label className="text-sm font-medium text-[var(--color-ink-800)]">{t("patient.booking.labels.preferredDate", "Preferred date")}</label>
                 <div id="date" className="mt-2">
                   {summaryLoading ? (
-                    <div className="text-sm text-[var(--color-ink-600)]">Loading calendar…</div>
+                    <div className="text-sm text-[var(--color-ink-600)]">{t("patient.booking.loadingCalendar", "Loading calendar…")}</div>
                   ) : summaryError ? (
                     <div className="text-sm text-[var(--color-danger-700)]">{summaryError}</div>
                   ) : (
@@ -555,22 +578,22 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
               {visibleError("date") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("date")}</p> : null}
               </div>
               <div id="time" className="grid gap-3">
-                <p className="text-sm font-medium text-[var(--color-ink-800)]">Available times</p>
+                <p className="text-sm font-medium text-[var(--color-ink-800)]">{t("patient.booking.labels.availableTimes", "Available times")}</p>
                   <div className="grid grid-cols-2 gap-3">
                     {slotsLoading ? (
-                      <div className="col-span-2 p-4 text-sm text-[var(--color-ink-600)]">Loading available times…</div>
+                      <div className="col-span-2 p-4 text-sm text-[var(--color-ink-600)]">{t("patient.booking.loadingSlots", "Loading available times…")}</div>
                     ) : slotsError ? (
                       <div className="col-span-2 p-4 text-sm text-[var(--color-danger-700)]">{slotsError}</div>
                     ) : slots.length === 0 ? (
                       <div className="col-span-2 p-4 text-sm text-[var(--color-ink-600)]">
                         {availabilitySummary && availabilitySummary[fields.date] ? (
                           availabilitySummary[fields.date].status === "fullyBooked" ? (
-                            "This date is fully booked. Try another day."
+                            t("patient.booking.availability.fullyBooked", "This date is fully booked. Try another day.")
                           ) : (
-                            "This doctor has no availability on this date."
+                            t("patient.booking.availability.noAvailabilityOnDate", "This doctor has no availability on this date.")
                           )
                         ) : (
-                          "No available times for this date."
+                          t("patient.booking.availability.noAvailableTimes", "No available times for this date.")
                         )}
                       </div>
                     ) : (
@@ -609,38 +632,38 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
           {currentStep === 4 ? (
             <Textarea
               id="reason"
-              label="Reason for visit"
+              label={t("patient.booking.labels.reasonForVisit", "Reason for visit")}
               value={fields.reason}
               onChange={(event) => {
                 updateField("reason", event.target.value);
                 setTouched((t) => ({ ...(t ?? {}), reason: true }));
                 setShowAllErrors(false);
               }}
-              hint="Share what you want the clinician to know before the visit."
+              hint={t("patient.booking.hints.reason", "Share what you want the clinician to know before the visit.")}
               error={visibleError("reason")}
             />
           ) : null}
 
           {currentStep === 5 ? (
             <div className="grid gap-4 rounded-[var(--radius-panel)] border border-[var(--color-panel-border)] bg-[var(--color-surface-muted)] p-5">
-              <p className="text-sm text-[var(--color-ink-600)]">Review your booking summary before confirming.</p>
+              <p className="text-sm text-[var(--color-ink-600)]">{t("patient.booking.reviewSummary", "Review your booking summary before confirming.")}</p>
               <p className="text-lg font-semibold text-[var(--color-ink-950)]">{selectedDoctor?.fullName}</p>
               <p className="text-sm text-[var(--color-ink-700)]">
-                {fields.appointmentType} / {fields.mode}
+                {fields.appointmentType ? t(`patient.appointmentCard.typeNames.${fields.appointmentType}`, fields.appointmentType) : ""} {fields.appointmentType && fields.mode ? " / " : ""} {fields.mode ? t(`patient.appointmentCard.modeNames.${fields.mode}`, fields.mode) : ""}
               </p>
               {visibleError("appointmentType") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("appointmentType")}</p> : null}
               {visibleError("mode") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("mode")}</p> : null}
               <p className="text-sm text-[var(--color-ink-700)]">
-                {fields.date || "Date not selected"} at {fields.time ? new Date(fields.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "time not selected"}
+                {fields.date || t("patient.booking.missingDate", "Date not selected")} at {fields.time ? new Date(fields.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : t("patient.booking.missingTime", "time not selected")}
               </p>
               {visibleError("date") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("date")}</p> : null}
               {visibleError("time") ? <p className="text-xs font-semibold text-[var(--color-danger-700)]">{visibleError("time")}</p> : null}
-              <p className="text-sm leading-6 text-[var(--color-ink-700)]">{fields.reason || "No visit reason provided yet."}</p>
+              <p className="text-sm leading-6 text-[var(--color-ink-700)]">{fields.reason || t("patient.booking.noReason", "No visit reason provided yet.")}</p>
 
               <div className="mt-4 grid gap-3">
                 <Input
                   id="guestFullName"
-                  label="Full name"
+                  label={t("forms.fullNameLabel", "Full name")}
                   value={fields.guestFullName as string}
                   onChange={(e) => {
                     updateField("guestFullName", e.target.value as any);
@@ -652,7 +675,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
 
                 <Input
                   id="guestEmail"
-                  label="Email"
+                  label={t("forms.emailLabel", "Email")}
                   type="email"
                   value={fields.guestEmail as string}
                   onChange={(e) => {
@@ -665,13 +688,13 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                     if (!isAuthenticated) checkEmailExists();
                   }}
                   readOnly={Boolean(isAuthenticated) || emailReadOnly}
-                  hint={isAuthenticated ? "Signed-in email" : undefined}
+                  hint={isAuthenticated ? t("patient.booking.signedInEmail", "Signed-in email") : undefined}
                   error={visibleError("guestEmail")}
                 />
 
                 <Input
                   id="guestPhone"
-                  label="Phone (optional)"
+                  label={t("forms.phoneLabel", "Phone (optional)")}
                   type="tel"
                   value={fields.guestPhone as string}
                   onChange={(e) => {
@@ -684,8 +707,8 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
 
                 {showEmailPrompt && emailExists && !isAuthenticated ? (
                   <div className="rounded-[var(--radius-control)] border border-[var(--color-panel-border)] bg-[var(--color-surface)] p-3">
-                    <p className="text-sm font-medium text-[var(--color-ink-900)]">This email already has an account. Would you like to sign in?</p>
-                    <p className="text-sm text-[var(--color-ink-700)] mt-1">Sign in to use your saved details and manage this appointment from your dashboard.</p>
+                    <p className="text-sm font-medium text-[var(--color-ink-900)]">{t("patient.booking.emailPrompt.title", "This email already has an account. Would you like to sign in?")}</p>
+                    <p className="text-sm text-[var(--color-ink-700)] mt-1">{t("patient.booking.emailPrompt.description", "Sign in to use your saved details and manage this appointment from your dashboard.")}</p>
                     <div className="mt-3 flex gap-2">
                       <Button
                         variant="ghost"
@@ -698,11 +721,11 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                           )
                         }
                       >
-                        Sign in
+                        {t("auth.signIn", "Sign in")}
                       </Button>
-                      <Button size="sm" onClick={() => setShowEmailPrompt(false)}>Continue without signing in</Button>
+                      <Button size="sm" onClick={() => setShowEmailPrompt(false)}>{t("patient.booking.emailPrompt.continue", "Continue without signing in")}</Button>
                     </div>
-                    <p className="text-xs mt-2 text-[var(--color-ink-600)]">You can still complete your booking without signing in.</p>
+                    <p className="text-xs mt-2 text-[var(--color-ink-600)]">{t("patient.booking.emailPrompt.note", "You can still complete your booking without signing in.")}</p>
                   </div>
                 ) : null}
               </div>
@@ -715,60 +738,60 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
               setShowConfirmation(false);
               setBookingSummary(null);
             }}
-            title={"Booking confirmed"}
-            description={"Your appointment request was submitted."}
+            title={t("patient.booking.confirmation.title", "Booking confirmed")}
+            description={t("patient.booking.confirmation.description", "Your appointment request was submitted.")}
           >
             <div className="grid gap-4">
               <div className="grid gap-1">
-                <p className="text-sm text-[var(--color-ink-700)]">Booking successful</p>
+                <p className="text-sm text-[var(--color-ink-700)]">{t("patient.booking.confirmation.successTitle", "Booking successful")}</p>
                 <p className="text-lg font-semibold text-[var(--color-ink-950)]">{bookingSummary?.doctor?.fullName ?? selectedDoctor?.fullName}</p>
               </div>
 
               <dl className="grid grid-cols-1 gap-2 text-sm">
                 <div className="grid grid-cols-2 gap-2">
-                  <dt className="text-xs text-[var(--color-ink-600)]">Booking reference</dt>
-                  <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.reference ?? "Unavailable"}</dd>
+                  <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.bookingReference", "Booking reference")}</dt>
+                  <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.reference ?? t("patient.booking.modal.unavailable", "Unavailable")}</dd>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <dt className="text-xs text-[var(--color-ink-600)]">Patient</dt>
+                  <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.patient", "Patient")}</dt>
                   <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.patient?.fullName ?? fields.guestFullName}</dd>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <dt className="text-xs text-[var(--color-ink-600)]">Service</dt>
-                  <dd className="font-medium text-[var(--color-ink-900)]">{appointmentTypes.find((t) => t.value === (bookingSummary?.appointmentType ?? fields.appointmentType))?.label ?? (bookingSummary?.appointmentType ?? fields.appointmentType)}</dd>
+                  <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.service", "Service")}</dt>
+                  <dd className="font-medium text-[var(--color-ink-900)]">{t(`patient.appointmentCard.typeNames.${bookingSummary?.appointmentType ?? fields.appointmentType}`, appointmentTypes.find((a) => a.value === (bookingSummary?.appointmentType ?? fields.appointmentType))?.label ?? (bookingSummary?.appointmentType ?? fields.appointmentType))}</dd>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <dt className="text-xs text-[var(--color-ink-600)]">Date</dt>
+                  <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.date", "Date")}</dt>
                   <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.startsAt ? new Date(bookingSummary.startsAt).toLocaleDateString() : fields.date}</dd>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <dt className="text-xs text-[var(--color-ink-600)]">Time</dt>
+                  <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.time", "Time")}</dt>
                   <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.startsAt ? new Date(bookingSummary.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : (fields.time ? new Date(fields.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "")}</dd>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <dt className="text-xs text-[var(--color-ink-600)]">Mode</dt>
-                  <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.mode ?? fields.mode}</dd>
+                  <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.mode", "Mode")}</dt>
+                  <dd className="font-medium text-[var(--color-ink-900)]">{t(`patient.appointmentCard.modeNames.${bookingSummary?.mode ?? fields.mode}`, bookingSummary?.mode ?? fields.mode)}</dd>
                 </div>
                 {bookingSummary?.clinic?.name || selectedClinic ? (
                   <div className="grid grid-cols-2 gap-2">
-                    <dt className="text-xs text-[var(--color-ink-600)]">Location</dt>
+                    <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.location", "Location")}</dt>
                     <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.clinic?.name ?? selectedClinic?.name}</dd>
                   </div>
                 ) : null}
                 <div className="grid grid-cols-2 gap-2">
-                  <dt className="text-xs text-[var(--color-ink-600)]">Email</dt>
+                  <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.email", "Email")}</dt>
                   <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.patient?.email ?? fields.guestEmail}</dd>
                 </div>
                 {bookingSummary?.patient?.phone || fields.guestPhone ? (
                   <div className="grid grid-cols-2 gap-2">
-                    <dt className="text-xs text-[var(--color-ink-600)]">Phone</dt>
+                    <dt className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.modal.labels.phone", "Phone")}</dt>
                     <dd className="font-medium text-[var(--color-ink-900)]">{bookingSummary?.patient?.phone ?? fields.guestPhone}</dd>
                   </div>
                 ) : null}
               </dl>
 
               {!isAuthenticated ? (
-                <p className="text-xs text-[var(--color-ink-600)]">If you sign in later with this email, this appointment will appear in your dashboard.</p>
+                <p className="text-xs text-[var(--color-ink-600)]">{t("patient.booking.confirmation.signInHint", "If you sign in later with this email, this appointment will appear in your dashboard.")}</p>
               ) : null}
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -785,11 +808,11 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
                     }
                   }}
                 >
-                  Done
+                  {t("patient.booking.actions.done", "Done")}
                 </Button>
-                <Button size="sm" onClick={() => { setShowConfirmation(false); setBookingSummary(null); router.push("/book"); }}>Book another appointment</Button>
+                <Button size="sm" onClick={() => { setShowConfirmation(false); setBookingSummary(null); router.push("/book"); }}>{t("patient.booking.actions.bookAnother", "Book another appointment")}</Button>
                 {!isAuthenticated && bookingSummary?.patient?.email ? (
-                  <Button variant="ghost" size="sm" onClick={() => router.push(`/auth/sign-in?email=${encodeURIComponent(String(bookingSummary.patient.email))}&next=${encodeURIComponent("/patient/appointments")}`)}>Sign in</Button>
+                  <Button variant="ghost" size="sm" onClick={() => router.push(`/auth/sign-in?email=${encodeURIComponent(String(bookingSummary.patient.email))}&next=${encodeURIComponent("/patient/appointments")}`)}>{t("auth.signIn", "Sign in")}</Button>
                 ) : null}
               </div>
             </div>
@@ -797,7 +820,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
 
           <div className="mt-8 flex flex-wrap justify-between gap-3">
             <Button variant="ghost" size="sm" onClick={goBack} disabled={currentStep === 1 || submitting}>
-              Back
+              {t("common.back", "Back")}
             </Button>
             <Button
               size="sm"
@@ -805,14 +828,14 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
               disabled={submitting || !isCurrentStepValid}
               loading={submitting}
             >
-              {currentStep === 5 ? (submitting ? "Booking..." : "Confirm booking") : "Continue"}
+              {currentStep === 5 ? (submitting ? t("patient.booking.actions.bookingInProgress", "Booking...") : t("patient.booking.actions.confirm", "Confirm booking")) : t("patient.booking.actions.continue", "Continue")}
             </Button>
           </div>
         </Card>
       </div>
 
       <Card className="h-fit lg:sticky lg:top-[calc(var(--layout-header-height)+1.25rem)]">
-        <CardHeader title="Booking summary" description="Key details stay visible as you move through the flow." />
+        <CardHeader title={t("patient.booking.summary.title", "Booking summary")} description={t("patient.booking.summary.description", "Key details stay visible as you move through the flow.")} />
         {selectedDoctor ? (
           <DoctorCard
             doctor={selectedDoctor}
@@ -821,7 +844,7 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
             primaryClinicName={selectedClinic?.name ?? null}
           />
         ) : (
-          <p className="text-sm text-[var(--color-ink-600)]">Choose a doctor to begin.</p>
+          <p className="text-sm text-[var(--color-ink-600)]">{t("patient.booking.summary.chooseDoctor", "Choose a doctor to begin.")}</p>
         )}
         {selectedClinic ? (
           <div className="mt-4 rounded-[var(--radius-control)] bg-[var(--color-surface-muted)] p-4 text-sm leading-6 text-[var(--color-ink-700)]">

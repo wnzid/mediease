@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { BookingWizard } from "@/components/appointments/BookingWizard";
 import { getDoctors, getClinics, appointmentTypes, appointmentModeOptions } from "@/lib/data/supabase";
+import { getDictionary, t as serverT } from "@/lib/i18n/server";
 
 export default async function PatientBookPage({
   searchParams,
@@ -13,10 +14,17 @@ export default async function PatientBookPage({
   return (
     <>
       <div className="layout-container">
-        <PageHeader
-          title="Book an appointment"
-          description="Move through a calm, validated booking flow with your summary visible from start to finish."
-        />
+        {
+          (() => {
+            const dict = getDictionary();
+            return (
+              <PageHeader
+                title={serverT(dict, "patient.booking.title", "Book an appointment")}
+                description={serverT(dict, "patient.booking.description", "Move through a calm, validated booking flow with your summary visible from start to finish.")}
+              />
+            );
+          })()
+        }
         <div className="mt-6">
           <BookingWizard
             initialDoctorId={doctorId}

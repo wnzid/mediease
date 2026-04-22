@@ -69,6 +69,9 @@ export function AppointmentCard({
     const statusLabel = escapeHtml(t("patient.appointmentCard.status", "Status"));
     const typeLabel = escapeHtml(t("patient.appointmentCard.type", "Type"));
     const modeLabel = escapeHtml(t("patient.appointmentCard.mode", "Mode"));
+    const statusValue = escapeHtml(t(`patient.appointmentCard.statusNames.${appointment.status}`, appointment.status.replace("-", " ")));
+    const typeValue = escapeHtml(t(`patient.appointmentCard.typeNames.${appointment.appointmentType}`, appointment.appointmentType));
+    const modeValue = escapeHtml(t(`patient.appointmentCard.modeNames.${appointment.mode}`, appointment.mode));
     const reasonHeading = escapeHtml(t("patient.appointmentCard.reason", "Reason"));
     const notesHeading = escapeHtml(t("patient.appointmentCard.notes", "Notes"));
     const bookedAtLabel = escapeHtml(t("patient.appointmentCard.bookedAt", "Booked at"));
@@ -106,9 +109,9 @@ export function AppointmentCard({
             <div class="row"><div class="label">${doctorLabel}</div><div class="value">${doctorName}</div></div>
             <div class="row"><div class="label">${clinicLabel}</div><div class="value">${clinicName}</div></div>
             <div class="row"><div class="label">${whenLabel}</div><div class="value">${escapeHtml(formatDateTimeRange(appointment.startsAt, appointment.endsAt))}</div></div>
-            <div class="row"><div class="label">${statusLabel}</div><div class="value">${escapeHtml(appointment.status)}</div></div>
-            <div class="row"><div class="label">${typeLabel}</div><div class="value">${escapeHtml(appointment.appointmentType)}</div></div>
-            <div class="row"><div class="label">${modeLabel}</div><div class="value">${escapeHtml(appointment.mode)}</div></div>
+            <div class="row"><div class="label">${statusLabel}</div><div class="value">${statusValue}</div></div>
+            <div class="row"><div class="label">${typeLabel}</div><div class="value">${typeValue}</div></div>
+            <div class="row"><div class="label">${modeLabel}</div><div class="value">${modeValue}</div></div>
           </div>
 
           <div class="section">
@@ -136,12 +139,12 @@ export function AppointmentCard({
         w.document.open();
         w.document.write(html);
         w.document.close();
-        const doPrint = () => {
+          const doPrint = () => {
           try {
             w.focus();
             w.print();
           } catch (e) {
-            setPrintError("Unable to open print view. Please allow popups and try again.");
+            setPrintError(t("patient.appointmentCard.printErrorMessage", "Unable to open print view. Please allow popups and try again."));
           }
         };
         if (w.document.readyState === "complete") doPrint();
@@ -174,13 +177,13 @@ export function AppointmentCard({
         win.focus();
         win.print();
       } catch (err) {
-        setPrintError("Unable to open print view. Please allow popups and try again.");
+        setPrintError(t("patient.appointmentCard.printErrorMessage", "Unable to open print view. Please allow popups and try again."));
       }
       setTimeout(() => {
         try { document.body.removeChild(iframe); } catch {}
       }, 2000);
     } catch (err) {
-      setPrintError("Unable to open print view. Please allow popups and try again.");
+      setPrintError(t("patient.appointmentCard.printErrorMessage", "Unable to open print view. Please allow popups and try again."));
     }
   }, [appointment, clinic?.name, doctor?.fullName, patientName]);
 
@@ -201,8 +204,8 @@ export function AppointmentCard({
           </div>
 
           <div className="mt-2 flex items-center gap-2">
-            <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{appointment.appointmentType}</Badge>
-            <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{appointment.mode}</Badge>
+            <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{t(`patient.appointmentCard.typeNames.${appointment.appointmentType}`, appointment.appointmentType)}</Badge>
+            <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{t(`patient.appointmentCard.modeNames.${appointment.mode}`, appointment.mode)}</Badge>
             <p className="ml-2 text-sm text-[var(--color-ink-700)] truncate max-w-[48ch]">{appointment.reason ?? t("patient.appointmentCard.noReasonProvided", "No reason provided")}</p>
           </div>
         </div>
@@ -223,7 +226,7 @@ export function AppointmentCard({
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.status", "Status")}</p>
-              <p className="mt-1 text-[var(--color-ink-800)]">{appointment.status}</p>
+              <p className="mt-1 text-[var(--color-ink-800)]">{t(`patient.appointmentCard.statusNames.${appointment.status}`, appointment.status.replace("-", " "))}</p>
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.when", "When")}</p>
@@ -231,7 +234,7 @@ export function AppointmentCard({
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.mode", "Mode")}</p>
-              <p className="mt-1 text-[var(--color-ink-800)]">{appointment.mode}</p>
+              <p className="mt-1 text-[var(--color-ink-800)]">{t(`patient.appointmentCard.modeNames.${appointment.mode}`, appointment.mode)}</p>
             </div>
             <div className="col-span-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.reason", "Reason")}</p>
@@ -251,7 +254,7 @@ export function AppointmentCard({
             </Button>
             {printError ? (
               <div className="w-full mt-2">
-                <Alert tone="warning" title="Unable to open print view" description={printError} />
+                <Alert tone="warning" title={t("patient.appointmentCard.printErrorTitle", "Unable to open print view")} description={printError} />
               </div>
             ) : null}
           </div>

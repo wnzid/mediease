@@ -226,6 +226,11 @@ const en = {
     or: "or",
     required: "This field is required",
     invalidEmail: "Please enter a valid email address",
+    enterFullName: "Enter your full name.",
+    passwordTooShort: "Password must be at least 8 characters.",
+    passwordsDoNotMatch: "Passwords do not match.",
+    phoneLabel: "Phone (optional)",
+    invalidPhone: "Enter a valid phone number.",
   },
 
   marketing: {
@@ -283,10 +288,25 @@ const en = {
     },
   },
 
+  calendar: {
+    previousMonth: "Previous month",
+    nextMonth: "Next month",
+  },
   doctors: {
-    telehealthAvailable: "Telehealth available",
-    yearsExperienceSuffix: "years experience",
-    viewProfile: "View profile",
+    find: {
+      title: "Find a doctor",
+      description: "Search by specialty, clinic, language, telehealth support, and broader care preferences.",
+      allSpecialties: "All specialties",
+      allClinics: "All clinics",
+      allLanguages: "All languages",
+      anyMode: "Any mode",
+      telehealth: "Telehealth",
+      search: "Search",
+      searchAria: "Search doctors",
+      clearFilters: "Clear filters",
+      emptyTitle: "No doctors match those filters",
+      emptyDescription: "Try broadening the specialty, clinic, or language filters to see more options.",
+    },
   },
 
 
@@ -337,6 +357,7 @@ const en = {
         descriptionList: "The latest changes to your account",
         noRecent: "No recent updates",
         empty: "No recent activity. Check your records or messages for updates.",
+        recentTitle: "Recent updates that keep care journeys visible.",
       },
       careTeam: {
         title: "Care team",
@@ -373,6 +394,119 @@ const en = {
       hide: "Hide",
       printSave: "Print / Save PDF",
       noReasonProvided: "No reason provided",
+        statusNames: {
+          pending: "Pending",
+          confirmed: "Confirmed",
+          completed: "Completed",
+          canceled: "Cancelled",
+          rescheduled: "Rescheduled",
+        },
+        typeNames: {
+          "new-patient": "New patient",
+          "follow-up": "Follow-up",
+          urgent: "Urgent",
+          wellness: "Wellness",
+        },
+        modeNames: {
+          "in-person": "In person",
+          telehealth: "Telehealth",
+        },
+        printErrorTitle: "Unable to open print view",
+        printErrorMessage: "Unable to open print view. Please allow popups and try again.",
+    },
+    booking: {
+      title: "Book an appointment",
+      description: "Move through a calm, validated booking flow with your summary visible from start to finish.",
+      headerDescription: "Move through the booking flow with clear choices and visible context.",
+      empty: {
+        noDoctors: {
+          title: "No doctors are available yet.",
+          description: "Please check back later or contact the clinic.",
+        },
+      },
+      labels: {
+        appointmentType: "Appointment type",
+        mode: "Visit mode",
+        preferredDate: "Preferred date",
+        availableTimes: "Available times",
+        reasonForVisit: "Reason for visit",
+      },
+      hints: {
+        reason: "Share what you want the clinician to know before the visit.",
+      },
+      loadingCalendar: "Loading calendar…",
+      loadingSlots: "Loading available times…",
+      availability: {
+        fullyBooked: "This date is fully booked. Try another day.",
+        noAvailabilityOnDate: "This doctor has no availability on this date.",
+        noAvailableTimes: "No available times for this date.",
+      },
+      typeDescriptions: {
+        "new-patient": "For your first appointment or a new specialist relationship.",
+        "follow-up": "For medication reviews, progress checks, and next-step planning.",
+        urgent: "For time-sensitive symptoms that still fit outpatient care.",
+        wellness: "For preventive visits, screenings, and general health planning.",
+      },
+      modeDescriptions: {
+        "in-person": "Visit the clinic and check in at the front desk.",
+        telehealth: "Join securely from home with captions-ready video.",
+      },
+      steps: {
+        chooseDoctor: "Choose doctor",
+        visitType: "Visit type",
+        dateTime: "Date and time",
+        reason: "Reason",
+        confirm: "Confirm",
+      },
+      reviewSummary: "Review your booking summary before confirming.",
+      missingDate: "Date not selected",
+      missingTime: "time not selected",
+      noReason: "No visit reason provided yet.",
+      signedInEmail: "Signed-in email",
+      emailPrompt: {
+        title: "This email already has an account. Would you like to sign in?",
+        description: "Sign in to use your saved details and manage this appointment from your dashboard.",
+        continue: "Continue without signing in",
+        note: "You can still complete your booking without signing in.",
+      },
+      confirmation: {
+        title: "Booking confirmed",
+        description: "Your appointment request was submitted.",
+        successTitle: "Booking successful",
+        toastTitle: "Appointment booked",
+        toastDescription: "Your appointment request was submitted.",
+        signInHint: "If you sign in later with this email, this appointment will appear in your dashboard.",
+      },
+      errors: {
+        bookingFailed: "Booking failed",
+      },
+      modal: {
+        labels: {
+          bookingReference: "Booking reference",
+          patient: "Patient",
+          service: "Service",
+          date: "Date",
+          time: "Time",
+          mode: "Mode",
+          location: "Location",
+          email: "Email",
+          phone: "Phone",
+        },
+        unavailable: "Unavailable",
+      },
+      confirmationSignInHint: "If you sign in later with this email, this appointment will appear in your dashboard.",
+      actions: {
+        done: "Done",
+        bookAnother: "Book another appointment",
+        confirm: "Confirm booking",
+        bookingInProgress: "Booking...",
+        continue: "Continue",
+      },
+      summary: {
+        title: "Booking summary",
+        description: "Key details stay visible as you move through the flow.",
+        chooseDoctor: "Choose a doctor to begin.",
+      },
     },
     notifications: {
       emptyTitle: "No care updates yet.",
@@ -380,6 +514,40 @@ const en = {
         "No care updates are available right now. Important hospital updates, appointment changes, and lab result alerts will appear here.",
       recentTitle: "Recent updates that keep care journeys visible.",
     },
+  },
+
+  appointments: {
+    noAvailableSlots: "No available slots",
+    selectNewTime: "Select a new time",
+    actions: {
+      reschedule: "Reschedule",
+      cancel: "Cancel appointment",
+    },
+    reschedule: {
+      title: "Reschedule appointment",
+      description: "Choose a new time slot. This loads live doctor availability for the appointment date.",
+      selectLabel: "Available time slots",
+      requestedTitle: "Reschedule requested",
+      requestedDescription: "Requested new time: {time}.",
+      noSlotSelected: "No slot selected.",
+      confirm: "Confirm reschedule",
+    },
+    cancel: {
+      title: "Cancel appointment",
+      description: "This action will cancel the appointment and notify relevant parties in a production deployment.",
+      note: "If you cancel, the status history would be updated and the clinician would be notified.",
+      canceledTitle: "Appointment canceled",
+      canceledDescription: "The appointment was canceled.",
+      confirm: "Confirm cancellation",
+    },
+  },
+
+  errors: {
+    failedToLoadSlots: "Failed to load slots",
+    network: "Network error",
+    failedToLoadAvailability: "Failed to load availability",
+    unableToCreateAppointment: "Unable to create appointment.",
+    unexpectedServer: "Unexpected server error.",
   },
 };
 
