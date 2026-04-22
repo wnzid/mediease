@@ -1,10 +1,9 @@
 import { AppointmentCard } from "@/components/appointments/AppointmentCard";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getAppointmentsForPatientByProfileId, getDoctorById, getClinicById } from "@/lib/data/supabase";
+import { getAppointmentsForPatientByProfileId, getDoctorById, getClinicById, resolveProfileIdByEmail } from "@/lib/data/supabase";
 import { getSessionContext } from "@/lib/auth/session";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import createServiceSupabaseClient from "@/lib/supabase/admin";
 import { getDictionary, t as serverT } from "@/lib/i18n/server";
 
 export default async function PatientAppointmentsPage() {
@@ -30,29 +29,8 @@ export default async function PatientAppointmentsPage() {
     );
   }
 
-  // 1) Try to resolve the profile id by email using the server client
-  let resolvedProfileId: string | null = null;
-  try {
-    const supabase = await createServerSupabaseClient();
-    if (supabase) {
-      const { data: byEmail } = await supabase.from("profiles").select("id").ilike("email", userEmail).maybeSingle();
-      if (byEmail?.id) resolvedProfileId = byEmail.id;
-    }
-  } catch {
-    // silent - fallthrough to service lookup
-  }
-
-  // 2) Service-role fallback for profile lookup (only if server lookup failed)
-  if (!resolvedProfileId) {
-    try {
-      const svc = createServiceSupabaseClient();
-      if (svc) {
-        const { data: svcByEmail } = await svc.from("profiles").select("id").ilike("email", userEmail).maybeSingle();
-        if (svcByEmail?.id) resolvedProfileId = svcByEmail.id;
-      }
-    } catch {}
-  }
-
+  // Resolve profile id by email using shared helper (server + service fallback inside)
+  const resolvedProfileId = await resolveProfileIdByEmail(userEmail);
   // If we still can't resolve a profile id, show empty state (do NOT fall back to auth user id)
   if (!resolvedProfileId) {
     return (

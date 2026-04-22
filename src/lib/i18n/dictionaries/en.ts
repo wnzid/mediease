@@ -293,6 +293,10 @@ const en = {
     nextMonth: "Next month",
   },
   doctors: {
+    telehealthAvailable: "Telehealth available",
+    yearsExperienceSuffix: "years' experience",
+    viewProfile: "View profile",
+    
     find: {
       title: "Find a doctor",
       description: "Search by specialty, clinic, language, telehealth support, and broader care preferences.",

@@ -1,5 +1,5 @@
 import {
-  HeaderSummary,
+  DashboardTop,
   ActionCenter,
   NextAppointment,
   RecentActivity,
@@ -7,7 +7,8 @@ import {
   CareTeamSupport,
 } from "@/features/patient/dashboard/DashboardComponents";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getUpcomingAppointmentForPatient, getDoctorById, getClinicById } from "@/lib/data/supabase";
+import { getNextUpcomingAppointmentForPatientByEmail, getDoctorById, getClinicById, resolveProfileIdByEmail } from "@/lib/data/supabase";
+import { getSessionContext } from "@/lib/auth/session";
 
 export default async function PatientDashboardPage() {
   // Server should provide real data; avoid fake/demo values here.
@@ -19,33 +20,45 @@ export default async function PatientDashboardPage() {
     location: string;
     appointmentType: string;
   } = null;
+  let nextAppointmentError = false;
+  
+  let patientName = undefined as string | undefined;
 
   try {
-    const supabase = await createServerSupabaseClient();
-    if (supabase) {
-      const { data: authData } = await supabase.auth.getUser();
-      const uid = authData?.user?.id ?? null;
-      if (uid) {
-        const { data: profile } = await supabase.from("profiles").select("id").eq("auth_user_id", uid).maybeSingle();
-        if (profile?.id) {
-          const appt = await getUpcomingAppointmentForPatient(profile.id);
-          if (appt) {
-            const doctor = await getDoctorById(appt.doctorId as string);
-            const clinic = appt.clinicId ? await getClinicById(appt.clinicId) : null;
-            nextAppointment = {
-              id: appt.id,
-              startsAt: appt.startsAt,
-              doctorName: doctor?.fullName ?? "",
-              specialty: doctor?.specialty ?? "",
-              location: clinic?.name ?? "",
-              appointmentType: appt.appointmentType,
-            };
+    const session = await getSessionContext();
+    const userEmail = (session.user?.email ?? "").trim().toLowerCase();
+    if (userEmail) {
+      const nextInfo = await getNextUpcomingAppointmentForPatientByEmail(userEmail);
+      if (nextInfo && nextInfo.next) {
+        const appt = nextInfo.next;
+        const doctor = await getDoctorById(appt.doctorId as string);
+        const clinic = appt.clinicId ? await getClinicById(appt.clinicId) : null;
+        nextAppointment = {
+          id: appt.id,
+          startsAt: appt.startsAt,
+          doctorName: doctor?.fullName ?? "",
+          specialty: doctor?.specialty ?? "",
+          location: clinic?.name ?? "",
+          appointmentType: appt.appointmentType,
+        };
+      }
+
+      // Resolve display name if possible
+      try {
+        const resolvedProfileId = await resolveProfileIdByEmail(userEmail);
+        if (resolvedProfileId) {
+          const supabase = await createServerSupabaseClient();
+          if (supabase) {
+            const { data: profileRow } = await supabase.from("profiles").select("full_name").eq("id", resolvedProfileId).maybeSingle();
+            if (profileRow?.full_name) patientName = profileRow.full_name;
           }
         }
-      }
+      } catch {}
     }
   } catch (e) {
-    // ignore server-side failures and fall back to empty dashboard
+    // If the shared helper throws, mark error so the card can show an error state
+    nextAppointment = null;
+    nextAppointmentError = true;
   }
   const activity: Array<{ id: string; title: string; description?: string; icon?: string }> = [];
   const medicalSummary = undefined;
@@ -56,18 +69,17 @@ export default async function PatientDashboardPage() {
 
   return (
     <>
-      <HeaderSummary />
+      <DashboardTop patientName={patientName} profileCompletion={profileCompletion} nextAppointment={nextAppointment} />
 
-      <div className="grid gap-6">
-        <ActionCenter profileCompletion={profileCompletion} medicalSummary={medicalSummary} reminders={reminders} />
-
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(21rem,0.92fr)]">
+      <div className="grid gap-6 pb-[calc(var(--layout-shell-y)+env(safe-area-inset-bottom))]">
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(20rem,0.9fr)]">
           <div className="grid gap-6">
-            <NextAppointment appointment={nextAppointment} />
+            <NextAppointment appointment={nextAppointment} error={nextAppointmentError} />
             <RecentActivity items={activity} />
           </div>
 
           <div className="grid gap-6">
+            <ActionCenter profileCompletion={profileCompletion} medicalSummary={medicalSummary} reminders={reminders} />
             <HealthSnapshot prescriptions={undefined} tests={undefined} messages={undefined} />
             <CareTeamSupport clinic={clinic} doctors={doctors} />
           </div>

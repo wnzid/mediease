@@ -29,6 +29,7 @@ export function AppTopbar({
   heading: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const menuButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const quickAction = quickActions[role];
   const { t } = useLocale();
 
@@ -37,7 +38,7 @@ export function AppTopbar({
       <header className="sticky top-0 z-40 border-b border-[var(--color-panel-border)] bg-white/96 pointer-events-auto">
         <div className="layout-container flex h-[var(--layout-header-height)] items-center justify-between gap-5">
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={() => setOpen(true)}>
+            <Button ref={menuButtonRef} variant="ghost" size="icon-sm" className="lg:hidden" onClick={() => setOpen(true)}>
               <Icon name="menu" className="h-[18px] w-[18px]" aria-hidden />
               <span className="sr-only">Open navigation</span>
             </Button>
@@ -87,8 +88,20 @@ export function AppTopbar({
         </div>
       </header>
 
-      <Drawer open={open} onClose={() => setOpen(false)}>
-        <RoleSidebar role={role} user={user} mobile onNavigate={() => setOpen(false)} />
+      <Drawer
+        open={open}
+        onClose={() => {
+          try {
+            menuButtonRef.current?.focus();
+          } catch (err) {}
+          setOpen(false);
+        }}
+        returnFocusRef={menuButtonRef}
+      >
+        <RoleSidebar role={role} user={user} mobile onNavigate={() => {
+          try { menuButtonRef.current?.focus(); } catch (err) {}
+          setOpen(false);
+        }} />
       </Drawer>
     </>
   );

@@ -1,14 +1,59 @@
 "use client";
 
+import React from "react";
 import { cn } from "@/lib/utils/cn";
 
 type DrawerProps = {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  returnFocusRef?: React.RefObject<HTMLElement | null>;
 };
 
-export function Drawer({ open, onClose, children }: DrawerProps) {
+export function Drawer({ open, onClose, children, returnFocusRef }: DrawerProps) {
+  // Manage focus restoration to avoid aria-hidden + retained focus accessibility errors.
+  const lastActiveRef = React.useRef<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (open) {
+      // store the element that had focus before opening
+      lastActiveRef.current = document.activeElement as HTMLElement | null;
+    } else {
+      // when closing, restore focus to the provided ref if available, otherwise to the previously focused element
+      const restore = () => {
+        try {
+          if (returnFocusRef?.current) {
+            returnFocusRef.current.focus();
+            return;
+          }
+          if (lastActiveRef.current && document.contains(lastActiveRef.current)) {
+            lastActiveRef.current.focus();
+          }
+        } catch (err) {
+          // ignore
+        }
+      };
+
+      // Run restore microtask so any close handlers finish first
+      Promise.resolve().then(restore);
+    }
+  }, [open, returnFocusRef]);
+
+  // Close on Escape and ensure focus is restored before calling onClose
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        try {
+          if (returnFocusRef?.current) returnFocusRef.current.focus();
+        } catch (err) {}
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose, returnFocusRef]);
+
   return (
     <div
       className={cn(

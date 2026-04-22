@@ -476,7 +476,16 @@ export function BookingWizard({ initialDoctorId, doctors, appointmentTypes, appo
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="grid gap-6">
-        <ProgressSteps currentStep={currentStep} steps={steps} />
+        <ProgressSteps
+          currentStep={currentStep}
+          steps={steps}
+          onStepClick={(stepNum) => {
+            // allow navigating back to completed steps only
+            if (stepNum < currentStep) {
+              setCurrentStep(stepNum);
+            }
+          }}
+        />
         <Card>
           <CardHeader
             title={steps[currentStep - 1]}

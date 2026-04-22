@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const skipText = (DICT[initialLocale]?.common?.skipToContent as string) ?? "Skip to main content";
 
   return (
-    <html lang={initialLocale} suppressHydrationWarning>
+    <html lang={initialLocale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head />
       <body className="min-h-screen bg-[var(--color-surface)] text-[var(--color-ink-900)] antialiased">
         <AppProviders initialLocale={initialLocale}>
