@@ -5,14 +5,16 @@ import { getAppointmentsForPatientByProfileId, getDoctorById, getClinicById } fr
 import { getSessionContext } from "@/lib/auth/session";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import createServiceSupabaseClient from "@/lib/supabase/admin";
+import { getDictionary, t as serverT } from "@/lib/i18n/server";
 
 export default async function PatientAppointmentsPage() {
+  const dict = getDictionary();
   const session = await getSessionContext();
   if (!session.user) {
     return (
       <>
-        <PageHeader title="Appointments" description="Track upcoming visits, revisit past appointments, and open each visit for more details." />
-        <EmptyState icon="calendar_month" title="No appointments yet" description="Please sign in to view appointments." actionLabel="Sign in" actionHref="/sign-in" />
+        <PageHeader title={serverT(dict, "common.appointments", "Appointments")} description={serverT(dict, "patient.appointmentsPage.description", "Track upcoming visits, revisit past appointments, and open each visit for more details.")} />
+        <EmptyState icon="calendar_month" title={serverT(dict, "patient.appointmentsPage.signInTitle", "No appointments yet")} description={serverT(dict, "patient.appointmentsPage.signInDescription", "Please sign in to view appointments.")} actionLabel={serverT(dict, "patient.appointmentsPage.signInActionLabel", "Sign in")} actionHref="/sign-in" />
       </>
     );
   }
@@ -22,8 +24,8 @@ export default async function PatientAppointmentsPage() {
   if (!userEmail) {
     return (
       <>
-        <PageHeader title="Appointments" description="Track upcoming visits, revisit past appointments, and open each visit for more details." />
-        <EmptyState icon="calendar_month" title="No appointments yet" description="No email found on your account. Please contact support." actionLabel="Book an appointment" actionHref="/patient/book" />
+        <PageHeader title={serverT(dict, "common.appointments", "Appointments")} description={serverT(dict, "patient.appointmentsPage.description", "Track upcoming visits, revisit past appointments, and open each visit for more details.")} />
+        <EmptyState icon="calendar_month" title={serverT(dict, "patient.appointmentsPage.emptyTitle", "No appointments yet")} description={serverT(dict, "patient.appointmentsPage.emptyDescription", "No email found on your account. Please contact support.")} actionLabel={serverT(dict, "patient.appointmentsPage.emptyActionLabel", "Book an appointment")} actionHref="/patient/book" />
       </>
     );
   }
@@ -55,8 +57,8 @@ export default async function PatientAppointmentsPage() {
   if (!resolvedProfileId) {
     return (
       <>
-        <PageHeader title="Appointments" description="Track upcoming visits, revisit past appointments, and open each visit for more details." />
-        <EmptyState icon="calendar_month" title="No appointments yet" description="We couldn't find a profile attached to your account. Contact support if this seems incorrect." actionLabel="Book an appointment" actionHref="/patient/book" />
+        <PageHeader title={serverT(dict, "common.appointments", "Appointments")} description={serverT(dict, "patient.appointmentsPage.description", "Track upcoming visits, revisit past appointments, and open each visit for more details.")} />
+        <EmptyState icon="calendar_month" title={serverT(dict, "patient.appointmentsPage.emptyTitle", "No appointments yet")} description={serverT(dict, "patient.appointmentsPage.emptyDescription", "We couldn't find a profile attached to your account. Contact support if this seems incorrect.")} actionLabel={serverT(dict, "patient.appointmentsPage.emptyActionLabel", "Book an appointment")} actionHref="/patient/book" />
       </>
     );
   }
@@ -81,15 +83,12 @@ export default async function PatientAppointmentsPage() {
 
   return (
     <>
-      <PageHeader
-        title="Appointments"
-        description="Track upcoming visits, revisit past appointments, and open each visit for more details."
-      />
+      <PageHeader title={serverT(dict, "common.appointments", "Appointments")} description={serverT(dict, "patient.appointmentsPage.description", "Track upcoming visits, revisit past appointments, and open each visit for more details.")} />
       {(upcoming.length > 0 || past.length > 0) ? (
         <div className="grid gap-6">
           {upcoming.length > 0 ? (
             <section>
-              <h3 className="mb-3 text-[0.95rem] font-semibold">Upcoming ({upcoming.length})</h3>
+              <h3 className="mb-3 text-[0.95rem] font-semibold">{serverT(dict, "patient.appointmentsPage.upcoming", "Upcoming")} ({upcoming.length})</h3>
               <div className="grid gap-3">
                 {await Promise.all(
                   upcoming.map(async (appointment) => {
@@ -104,7 +103,7 @@ export default async function PatientAppointmentsPage() {
 
           {past.length > 0 ? (
             <section>
-              <h3 className="mb-3 text-[0.95rem] font-semibold">Past ({past.length})</h3>
+              <h3 className="mb-3 text-[0.95rem] font-semibold">{serverT(dict, "patient.appointmentsPage.past", "Past")} ({past.length})</h3>
               <div className="grid gap-3">
                 {await Promise.all(
                   past.map(async (appointment) => {
@@ -120,9 +119,9 @@ export default async function PatientAppointmentsPage() {
       ) : (
         <EmptyState
           icon="calendar_month"
-          title="No appointments yet"
-          description="Once you book an appointment, it will appear here with status updates and visit details."
-          actionLabel="Book an appointment"
+          title={serverT(dict, "patient.appointmentsPage.emptyTitle", "No appointments yet")}
+          description={serverT(dict, "patient.appointmentsPage.emptyDescription", "Once you book an appointment, it will appear here with status updates and visit details.")}
+          actionLabel={serverT(dict, "patient.appointmentsPage.emptyActionLabel", "Book an appointment")}
           actionHref="/patient/book"
         />
       )}

@@ -34,14 +34,14 @@ export function AppTopbar({
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-[var(--color-panel-border)] bg-white/96">
+      <header className="sticky top-0 z-40 border-b border-[var(--color-panel-border)] bg-white/96 pointer-events-auto">
         <div className="layout-container flex h-[var(--layout-header-height)] items-center justify-between gap-5">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={() => setOpen(true)}>
               <Icon name="menu" className="h-[18px] w-[18px]" aria-hidden />
               <span className="sr-only">Open navigation</span>
             </Button>
-            <Link href="/" className="inline-flex lg:hidden">
+            <Link href="/" aria-label="MediEase home" className="inline-flex lg:hidden items-center h-[var(--layout-header-height)] cursor-pointer">
               <Logo variant="icon" size="md" />
             </Link>
             <div className="min-w-0 hidden lg:flex lg:items-center">
@@ -57,7 +57,7 @@ export function AppTopbar({
 
                 if (isLogoElement) {
                   return (
-                    <Link href="/" className="min-w-0 inline-flex items-center">
+                    <Link href="/" aria-label="MediEase home" className="min-w-0 inline-flex items-center h-[var(--layout-header-height)] cursor-pointer">
                       {heading}
                     </Link>
                   );

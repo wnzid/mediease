@@ -14,11 +14,7 @@ export default async function PatientLayout({
     <AppShell
       role="patient"
       user={session.user}
-      heading={
-        <Link href="/" className="inline-flex">
-          <Logo variant="landscape" size={150} alt="MediEase" />
-        </Link>
-      }
+      heading={<Logo variant="landscape" size={150} alt="MediEase" />}
     >
       {children}
     </AppShell>

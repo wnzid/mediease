@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Alert } from "@/components/ui/Alert";
 import { formatDate, formatTime, formatLongDate, formatDateTimeRange } from "@/lib/formatting/date";
 import type { Appointment } from "@/types/appointments";
+import { useI18n } from "@/lib/i18n/provider";
 
 export function AppointmentCard({
   appointment,
@@ -24,6 +25,7 @@ export function AppointmentCard({
   const [printError, setPrintError] = useState<string | null>(null);
 
   const toggle = useCallback(() => setOpen((v) => !v), []);
+  const { t } = useI18n();
 
   const handlePrint = useCallback(() => {
     setPrintError(null);
@@ -48,15 +50,28 @@ export function AppointmentCard({
       });
     }
 
-    const patient = escapeHtml(patientName ?? "You");
-    const doctorName = escapeHtml(doctor?.fullName ?? "Assigned clinician");
+    const patient = escapeHtml(patientName ?? t("patient.appointmentCard.patient", "Patient"));
+    const doctorName = escapeHtml(doctor?.fullName ?? t("patient.appointmentCard.assignedClinician", "Assigned clinician"));
     const clinicName = escapeHtml(clinic?.name ?? "—");
     const reference = escapeHtml(appointment.reference ?? "");
     const reason = escapeHtml(appointment.reason ?? "");
     const notes = escapeHtml(appointment.notes ?? "");
     const created = appointment.createdAt ? `${escapeHtml(formatLongDate(appointment.createdAt))} ${escapeHtml(formatTime(appointment.createdAt))}` : "";
 
-    const title = `MediEase — Appointment${reference ? ` • ${reference}` : ""}`;
+    const brandLabel = escapeHtml(t("common.brand", "MediEase"));
+    const appointmentLabel = escapeHtml(t("patient.appointmentCard.appointmentDetails", "Appointment Details"));
+    const title = `${brandLabel} — ${appointmentLabel}${reference ? ` • ${reference}` : ""}`;
+    const bookingRefLabel = escapeHtml(t("patient.appointmentCard.bookingReference", "Booking reference"));
+    const patientLabel = escapeHtml(t("patient.appointmentCard.patient", "Patient"));
+    const doctorLabel = escapeHtml(t("patient.appointmentCard.doctor", "Doctor"));
+    const clinicLabel = escapeHtml(t("patient.appointmentCard.clinicLocation", "Clinic / Location"));
+    const whenLabel = escapeHtml(t("patient.appointmentCard.when", "When"));
+    const statusLabel = escapeHtml(t("patient.appointmentCard.status", "Status"));
+    const typeLabel = escapeHtml(t("patient.appointmentCard.type", "Type"));
+    const modeLabel = escapeHtml(t("patient.appointmentCard.mode", "Mode"));
+    const reasonHeading = escapeHtml(t("patient.appointmentCard.reason", "Reason"));
+    const notesHeading = escapeHtml(t("patient.appointmentCard.notes", "Notes"));
+    const bookedAtLabel = escapeHtml(t("patient.appointmentCard.bookedAt", "Booked at"));
     const html = `<!doctype html>
       <html>
       <head>
@@ -80,30 +95,30 @@ export function AppointmentCard({
       </head>
       <body>
         <header>
-          <div class="brand">MediEase</div>
-          <div class="muted">Appointment Details</div>
+          <div class="brand">${brandLabel}</div>
+          <div class="muted">${appointmentLabel}</div>
         </header>
 
         <main>
           <div class="section">
-            <div class="row"><div class="label">Booking reference</div><div class="value">${reference || "—"}</div></div>
-            <div class="row"><div class="label">Patient</div><div class="value">${patient}</div></div>
-            <div class="row"><div class="label">Doctor</div><div class="value">${doctorName}</div></div>
-            <div class="row"><div class="label">Clinic / Location</div><div class="value">${clinicName}</div></div>
-            <div class="row"><div class="label">When</div><div class="value">${escapeHtml(formatDateTimeRange(appointment.startsAt, appointment.endsAt))}</div></div>
-            <div class="row"><div class="label">Status</div><div class="value">${escapeHtml(appointment.status)}</div></div>
-            <div class="row"><div class="label">Type</div><div class="value">${escapeHtml(appointment.appointmentType)}</div></div>
-            <div class="row"><div class="label">Mode</div><div class="value">${escapeHtml(appointment.mode)}</div></div>
+            <div class="row"><div class="label">${bookingRefLabel}</div><div class="value">${reference || "—"}</div></div>
+            <div class="row"><div class="label">${patientLabel}</div><div class="value">${patient}</div></div>
+            <div class="row"><div class="label">${doctorLabel}</div><div class="value">${doctorName}</div></div>
+            <div class="row"><div class="label">${clinicLabel}</div><div class="value">${clinicName}</div></div>
+            <div class="row"><div class="label">${whenLabel}</div><div class="value">${escapeHtml(formatDateTimeRange(appointment.startsAt, appointment.endsAt))}</div></div>
+            <div class="row"><div class="label">${statusLabel}</div><div class="value">${escapeHtml(appointment.status)}</div></div>
+            <div class="row"><div class="label">${typeLabel}</div><div class="value">${escapeHtml(appointment.appointmentType)}</div></div>
+            <div class="row"><div class="label">${modeLabel}</div><div class="value">${escapeHtml(appointment.mode)}</div></div>
           </div>
 
           <div class="section">
-            <h2>Reason</h2>
+            <h2>${reasonHeading}</h2>
             <div class="muted">${reason || "—"}</div>
           </div>
 
-          ${notes ? `<div class="section"><h2>Notes</h2><div class="muted">${notes}</div></div>` : ""}
+          ${notes ? `<div class="section"><h2>${notesHeading}</h2><div class="muted">${notes}</div></div>` : ""}
 
-          ${created ? `<div class="section"><div class="row"><div class="label">Booked at</div><div class="value">${created}</div></div></div>` : ""}
+          ${created ? `<div class="section"><div class="row"><div class="label">${bookedAtLabel}</div><div class="value">${created}</div></div></div>` : ""}
 
         </main>
         <script>
@@ -175,7 +190,7 @@ export function AppointmentCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-[var(--color-ink-950)]">{doctor?.fullName ?? "Assigned clinician"}</h3>
+              <h3 className="text-sm font-semibold text-[var(--color-ink-950)]">{doctor?.fullName ?? t("patient.appointmentCard.assignedClinician", "Assigned clinician")}</h3>
               <div className="mt-1 text-xs text-[var(--color-ink-600)]">
                 {formatDate(appointment.startsAt)} · {formatTime(appointment.startsAt)} · {clinic?.name ?? "—"}
               </div>
@@ -188,13 +203,13 @@ export function AppointmentCard({
           <div className="mt-2 flex items-center gap-2">
             <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{appointment.appointmentType}</Badge>
             <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{appointment.mode}</Badge>
-            <p className="ml-2 text-sm text-[var(--color-ink-700)] truncate max-w-[48ch]">{appointment.reason ?? "No reason provided"}</p>
+            <p className="ml-2 text-sm text-[var(--color-ink-700)] truncate max-w-[48ch]">{appointment.reason ?? t("patient.appointmentCard.noReasonProvided", "No reason provided")}</p>
           </div>
         </div>
 
         <div className="flex flex-col items-end gap-2">
           <Button variant="ghost" size="sm" onClick={toggle} iconRight={open ? "chevron-right" : "chevron-right"} className="px-3">
-            {open ? "Hide" : "View details"}
+            {open ? t("patient.appointmentCard.hide", "Hide") : t("patient.appointmentCard.viewDetails", "View details")}
           </Button>
         </div>
       </div>
@@ -203,28 +218,28 @@ export function AppointmentCard({
         <div className="mt-3 border-t border-[var(--color-panel-border)] pt-3">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Reference</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.bookingReference", "Reference")}</p>
               <p className="mt-1 text-[var(--color-ink-800)]">{appointment.reference ?? "—"}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Status</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.status", "Status")}</p>
               <p className="mt-1 text-[var(--color-ink-800)]">{appointment.status}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">When</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.when", "When")}</p>
               <p className="mt-1 text-[var(--color-ink-800)]">{formatDateTimeRange(appointment.startsAt, appointment.endsAt)}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Mode</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.mode", "Mode")}</p>
               <p className="mt-1 text-[var(--color-ink-800)]">{appointment.mode}</p>
             </div>
             <div className="col-span-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Reason</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.reason", "Reason")}</p>
               <p className="mt-1 text-[var(--color-ink-700)]">{appointment.reason ?? "—"}</p>
             </div>
             {appointment.notes ? (
               <div className="col-span-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Notes</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">{t("patient.appointmentCard.notes", "Notes")}</p>
                 <p className="mt-1 text-[var(--color-ink-700)]">{appointment.notes}</p>
               </div>
             ) : null}
@@ -232,7 +247,7 @@ export function AppointmentCard({
 
           <div className="mt-3 flex gap-2">
             <Button variant="outline" size="sm" onClick={handlePrint} iconLeft="file-text">
-              Print / Save PDF
+              {t("patient.appointmentCard.printSave", "Print / Save PDF")}
             </Button>
             {printError ? (
               <div className="w-full mt-2">
