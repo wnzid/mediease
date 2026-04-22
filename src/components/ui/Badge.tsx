@@ -1,5 +1,8 @@
+"use client";
+
 import { cn } from "@/lib/utils/cn";
 import type { AppointmentStatus } from "@/types/appointments";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 const statusClasses: Record<AppointmentStatus, string> = {
   pending: "bg-[var(--color-warning-100)] text-[var(--color-warning-700)]",
@@ -29,5 +32,7 @@ export function Badge({
 }
 
 export function StatusBadge({ status }: { status: AppointmentStatus }) {
-  return <Badge className={statusClasses[status]}>{status.replace("-", " ")}</Badge>;
+  const { t } = useLocale();
+  const label = t(`patient.appointmentCard.statusNames.${status}`, status.replace("-", " "));
+  return <Badge className={statusClasses[status]}>{label}</Badge>;
 }

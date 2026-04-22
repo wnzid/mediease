@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/utils/cn";
+import { useLocale } from "@/lib/i18n/useLocale";
 
 type DaySummary = {
   status: "available" | "fullyBooked" | "unavailable";
@@ -60,6 +61,20 @@ export function Calendar({ selectedDate, onSelect, minDate, maxDate, availabilit
 
   const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
+  const { locale, t } = useLocale();
+
+  const monthLabel = useMemo(() => monthStart.toLocaleString(locale ?? undefined, { month: "long", year: "numeric" }), [monthStart, locale]);
+
+  const weekdayLabels = useMemo(() => {
+    try {
+      const fmt = new Intl.DateTimeFormat(locale ?? undefined, { weekday: "short" });
+      const base = new Date(Date.UTC(2023, 0, 1)); // Sunday
+      return Array.from({ length: 7 }).map((_, i) => fmt.format(new Date(Date.UTC(2023, 0, 1 + i))));
+    } catch (e) {
+      return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    }
+  }, [locale]);
+
   function isDisabled(dateIso: string) {
     // Disable past dates and dates outside explicit min/max bounds.
     if (minDate && dateIso < minDate) return true;
@@ -71,25 +86,21 @@ export function Calendar({ selectedDate, onSelect, minDate, maxDate, availabilit
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-sm font-medium text-[var(--color-ink-900)]">{monthStart.toLocaleString(undefined, { month: "long", year: "numeric" })}</div>
+        <div className="text-sm font-medium text-[var(--color-ink-900)]">{monthLabel}</div>
         <div className="flex items-center gap-2">
-          <button type="button" aria-label="Previous month" onClick={prevMonth} className="p-2 rounded hover:bg-[var(--color-panel-muted)]">
+          <button type="button" aria-label={t("calendar.previousMonth", "Previous month")} onClick={prevMonth} className="p-2 rounded hover:bg-[var(--color-panel-muted)]">
             <Icon name="chevron_left" className="h-4 w-4" />
           </button>
-          <button type="button" aria-label="Next month" onClick={nextMonth} className="p-2 rounded hover:bg-[var(--color-panel-muted)]">
+          <button type="button" aria-label={t("calendar.nextMonth", "Next month")} onClick={nextMonth} className="p-2 rounded hover:bg-[var(--color-panel-muted)]">
             <Icon name="chevron_right" className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-xs text-[var(--color-ink-600)] mb-2">
-        <div className="text-center">Sun</div>
-        <div className="text-center">Mon</div>
-        <div className="text-center">Tue</div>
-        <div className="text-center">Wed</div>
-        <div className="text-center">Thu</div>
-        <div className="text-center">Fri</div>
-        <div className="text-center">Sat</div>
+        {weekdayLabels.map((d) => (
+          <div key={d} className="text-center">{d}</div>
+        ))}
       </div>
 
       <div className="grid grid-cols-7 gap-1">

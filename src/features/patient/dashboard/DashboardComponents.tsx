@@ -244,13 +244,20 @@ export function NextAppointment({ appointment }: { appointment?: AppointmentSumm
     <Card>
       <CardHeader
         title={serverT(dict, "patient.dashboard.nextAppointment.title", "Next appointment")}
-        description={appointment ? `${formatDate(appointment.startsAt)} at ${formatTime(appointment.startsAt)}` : serverT(dict, "patient.dashboard.nextAppointment.noUpcoming", "No upcoming visits")}
+        description={
+          appointment ? `${formatDate(appointment.startsAt)} at ${formatTime(appointment.startsAt)}` : serverT(dict, "patient.dashboard.nextAppointment.noUpcoming", "No upcoming visits")
+        }
         action={
-          !appointment ? (
-            <LinkButton href="/patient/book" variant="secondary" size="sm">
-              {serverT(dict, "patient.dashboard.nextAppointment.bookVisit", "Book visit")}
+          <div className="flex items-center gap-2">
+            {!appointment ? (
+              <LinkButton href="/patient/book" variant="secondary" size="sm">
+                {serverT(dict, "patient.dashboard.nextAppointment.bookVisit", "Book visit")}
+              </LinkButton>
+            ) : null}
+            <LinkButton href="/patient/appointments" variant={appointment ? "outline" : "ghost"} size="sm">
+              {serverT(dict, "patient.dashboard.nextAppointment.viewAll", "View all")}
             </LinkButton>
-          ) : null
+          </div>
         }
       />
 

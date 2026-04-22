@@ -31,12 +31,6 @@ const lt = {
     accessibility: "Prieinamumas",
   },
 
-  doctors: {
-    telehealthAvailable: "Nuotolinė konsultacija prieinama",
-    yearsExperienceSuffix: "metų patirtis",
-    viewProfile: "Peržiūrėti profilį",
-  },
-
   header: {
     heroTitle: "Raskite pagalbą, užsirašykite pas gydytoją ir pasiekite savo medicininius įrašus vienoje vietoje.",
     heroCta: "Užsirašyti",
@@ -82,143 +76,34 @@ const lt = {
     settings: "Nustatymai",
   },
 
-  services: {
-    heroTitle: "Išsamios ligoninės paslaugos Jūsų sveikatai",
-    intro: "Nuo diagnostikos iki operacijų – mūsų komandos teikia priežiūrą įvairiose srityse.",
-    generalConsultation: "Bendrosios konsultacijos",
-    preventiveCare: "Prevencinė priežiūra",
-    diagnostics: "Diagnostika",
-    surgery: "Operacijos",
-    inpatient: "Stacionarinė priežiūra",
-    readMore: "Skaityti daugiau",
-    items: {
-      generalConsultationDesc: "Įprastos ambulatorinės konsultacijos, lėtinių ligų stebėsena ir pradiniai įvertinimai.",
-      emergencyCareDesc: "24/7 greitoji triavimo ir stabilizavimo pagalba sunkiems atvejams, greitas prieiga prie vaizdavimo ir specialistų.",
-      surgicalServicesDesc: "Planuojamos ir skubios operacijos su perioperacine slauga, nejautra ir reabilitacijos planavimu.",
-      diagnosticImagingDesc: "Vietiniai X-ray, ultragarsas, CT ir MRI su greitais atsakymais gydytojams.",
-      laboratoryTestingDesc: "Integruotos laboratorinės paslaugos su el. rezultatais ir pranešimais gydytojams.",
-      inpatientCareDesc: "Patogios stebimos palatos, slaugos komandos ir koordinuotas išrašymas saugiam atsigavimui.",
-    },
-    list: {
-      sameDay: "Tos pačios dienos ir suplanuotos konsultacijos",
-      coordinatedReferrals: "Koordinuotos specialisto siuntimai",
-      imagingAndLabs: "Vietinė vaizdavimo ir laboratorinė diagnostika",
-      surgicalCare: "Planuojama ir skubi chirurginė priežiūra",
-      inpatientSupport: "Stacionarinė stebėsena ir reabilitacija",
-    },
-    summaryShort: "Tos pačios dienos konsultacijos · Koordinuoti siuntimai · Stacionarinė ir tęstinė priežiūra",
-    coreTitle: "Mūsų pagrindinės medicinos paslaugos",
-    coreDescription: "Teikiame paslaugas skubios, diagnostikos, chirurgijos ir ilgalaikės priežiūros poreikiams - remiami daugiadisciplininėmis komandomis.",
-    emergencyCare: "Skubi pagalba",
-    surgicalServices: "Chirurginės paslaugos",
-    diagnosticImaging: "Diagnostiniai vaizdai",
-    laboratoryTesting: "Laboratoriniai tyrimai",
-    diagnosticsTitle: "Diagnostika ir pacientų stebėsena",
-    diagnosticsDescription: "Deriname modernų vaizdavimą, laboratorinę koordinaciją ir nuolatinę stebėseną greitiems sprendimams.",
-    contactDiagnostics: "Susisiekite dėl diagnostikos",
-    surgicalTitle: "Chirurginė priežiūra",
-    surgicalDescription: "Mūsų chirurgų komandos teikia pasirengimo, saugios operacijos ir pooperacinės stebėsenos paslaugas.",
-    inpatientTitle: "Stacionarinė priežiūra ir reabilitacija",
-    inpatientDescription: "Patogūs palatos, koordinuota slaugos komanda ir saugūs išrašymo procesai.",
-    howToAccessTitle: "Kaip gauti priežiūrą",
-    howToAccessSubtitle: "Paprastas kelias iki reikalingos pagalbos.",
-    howSteps: {
-      chooseService: "Pasirinkite paslaugą",
-      chooseServiceDesc: "Pasirinkite skyrių arba konsultaciją, atitinkančią Jūsų poreikius.",
-      bookAppointment: "Užsirašykite vizitui",
-      bookAppointmentDesc: "Užsirašykite internetu arba susisiekite su registracija.",
-      attendFollowup: "Apsilankykite ir tęskite",
-      attendFollowupDesc: "Apsilankykite ir naudokite paciento paskyrą tolimesniam bendravimui.",
-    },
-    faqsTitle: "Dažniausiai užduodami klausimai",
-    faqs: {
-      q1: {
-        q: "Ar man reikia siuntimo pas specialistą?",
-        a: "Daugelį paslaugų galite užsisakyti tiesiogiai; kai kurios specializuotos klinikos gali reikalauti siuntimo priklausomai nuo draudimo ar klinikinio kelio.",
-      },
-      q2: {
-        q: "Ar galiu užsisakyti konsultaciją internetu?",
-        a: "Taip - naudokite mygtuką Užsirašyti arba kreipkitės į registraciją.",
-      },
-      q3: {
-        q: "Ką turėčiau atsinešti į apsilankymą?",
-        a: "Atsineškite asmens tapatybės dokumentą, vaistų sąrašą ir siuntimą ar paskutinius tyrimus, jei turite.",
-      },
-      q4: {
-        q: "Ar pakartotiniai vizitai valdomi per paciento paskyrą?",
-        a: "Taip - rezultatai, vizitų santraukos ir pakartotiniai užsakymai pasiekiami per Paciento paskyrą.",
-      },
+  calendar: {
+    previousMonth: "Ankstesnis mėnuo",
+    nextMonth: "Kitas mėnuo",
+  },
+
+  doctors: {
+    telehealthAvailable: "Nuotolinė konsultacija prieinama",
+    yearsExperienceSuffix: "metų patirtis",
+    viewProfile: "Peržiūrėti profilį",
+    find: {
+      title: "Raskite gydytoją",
+      description: "Ieškokite pagal specializaciją, kliniką, kalbą, nuotolinę konsultaciją ir platesnius priežiūros kriterijus.",
+      allSpecialties: "Visos specializacijos",
+      allClinics: "Visos klinikos",
+      allLanguages: "Visos kalbos",
+      anyMode: "Bet koks režimas",
+      telehealth: "Nuotolinis",
+      search: "Ieškoti",
+      searchAria: "Ieškoti gydytojų",
+      clearFilters: "Išvalyti filtrus",
+      emptyTitle: "Nėra gydytojų pagal pasirinktus filtrus",
+      emptyDescription: "Pabandykite išplėsti specializacijos, klinikos ar kalbos filtrus, kad pamatytumėte daugiau variantų.",
     },
   },
 
-  auth: {
-    signIn: "Prisijungti",
-    forgotPassword: "Pamiršote slaptažodį",
-    resetPassword: "Atstatyti slaptažodį",
-    
-    signInSuccess: "Prisijungimas sėkmingas",
-    signInFailed: "Prisijungimas nepavyko",
-    continueWithGoogle: "Tęsti su Google",
-    continueToWorkspace: "Tęsti į savo paskyrą",
-    googleSignInError: "Nepavyko pradėti prisijungimo per Google",
-    accountReady: "Paskyra paruošta",
-    accountCreateFailed: "Nepavyko sukurti paskyros",
-    resetInstructionsReady: "Instrukcijos išsiųstos",
-    resetCouldNotBeStarted: "Nepavyko pradėti slaptažodžio atkūrimo",
-    sendResetLink: "Išsiųsti atkūrimo nuorodą",
-    passwordUpdated: "Slaptažodis atnaujintas",
-    passwordUpdateFailed: "Slaptažodžio atnaujinimas nepavyko",
-    updatePassword: "Atnaujinti slaptažodį",
-    createAccount: "Sukurti paskyrą",
-    forgot: {
-      eyebrow: "Slaptažodžio pagalba",
-      title: "Atstatyti slaptažodį",
-      description: "Įveskite el. paštą, susietą su paskyra, ir mes nurodysime kitus žingsnius.",
-    },
-    backToSignIn: "Grįžti į prisijungimą",
-    signInDescription: "Prisijungimas pacientams, gydytojams ir administratoriams.",
-    signInPage: {
-      eyebrow: "Sveiki sugrįžę",
-      title: "Prisijunkite prie MediEase",
-      description: "",
-    },
-    createPatientAccount: "Sukurti paciento paskyrą",
-    signUp: "Paciento registracija",
-    signUpDescription: "Sukurkite MediEase paciento paskyrą.",
-    signUpPage: {
-      eyebrow: "",
-      title: "Sukurkite MediEase paskyrą",
-      description: "",
-    },
-    alreadyHaveAccount: "Jau turite paskyrą? Prisijunkite",
-    resetPage: {
-      eyebrow: "Apsaugokite savo paskyrą",
-      title: "Pasirinkite naują slaptažodį",
-      description: "Pasirinkite slaptažodį, kurį galėsite prisiminti ir kuris apsaugos jūsų paskyrą.",
-    },
-    verify: {
-      eyebrow: "Patikrinkite savo paštą",
-      title: "Patvirtinkite savo el. pašto adresą",
-      description: "Užbaikite patvirtinimą, kad suaktyvintumėte savo MediEase paskyrą.",
-      emailSent: "Patvirtinimo laiškas išsiųstas",
-      emailSentTo: "Patvirtinimo laiškas išsiųstas adresu",
-      checkInboxDescription: "Patikrinkite paštą ir sekite patvirtinimo nuorodą, kad užbaigtumėte registraciją.",
-      needHelp: "Reikia pagalbos?",
-      contactSupport: "Susisiekite su palaikymu",
-    },
-    supabaseClientUnavailable: "Nepavyko sukurti Supabase kliento",
-    oauth: {
-      completingTitle: "Vykdoma prisijungimo užbaigimas",
-      completingBody: "Baigiame prisijungimą ir ruošiamės atidaryti paskyrą.",
-      errorTitle: "Prisijungimo klaida",
-      redirectingTitle: "Peradresuojama…",
-      redirectingBody: "Jei neperadresuojama automatiškai, naudokite mygtuką žemiau.",
-      noUser: "OAuth metu nepavyko rasti autentifikuoto vartotojo.",
-      serverError: "Nepavyko užbaigti OAuth prisijungimo serveryje.",
-      noRedirect: "Prisijungimas baigtas, bet nepateiktas peradresavimo kelias.",
-      unknown: "Įvyko nežinoma klaida prisijungimo metu.",
-    },
-    goHome: "Eiti į pradžią",
+  services: {
+    heroTitle: "Išsamios ligoninės paslaugos Jūsų sveikatai",
+    intro: "Nuo diagnostikos iki operacijų – mūsų komandos teikia priežiūrą įvairiose srityse.",
   },
 
   forms: {
@@ -232,64 +117,12 @@ const lt = {
     or: "arba",
     required: "Šis laukas privalomas",
     invalidEmail: "Įveskite galiojantį el. paštą",
+    enterFullName: "Įveskite savo vardą ir pavardę.",
+    passwordTooShort: "Slaptažodis turi būti bent 8 simbolių.",
+    passwordsDoNotMatch: "Slaptažodžiai nesutampa.",
+    phoneLabel: "Telefono numeris (nebūtina)",
+    invalidPhone: "Įveskite galiojantį telefono numerį.",
   },
-
-  marketing: {
-    accessibility: {
-      title: "Prieinamumas matomas, o ne paslėptas produktuose.",
-      lead: "Valdikliai ir turinio šablonai palaiko pacientus su silpnu regėjimu, judėjimo sutrikimais, jautrumu jutimams ir stresinėmis situacijomis.",
-      commitments: {
-        keyboard: {
-          title: "Naršymas klaviatūra",
-          description: "Aiškūs fokusavimo sprendimai, praleidimo nuorodos ir semantiniai regionai palaiko patikimą naršymą klaviatūra.",
-        },
-        readable: {
-          title: "Lengvai skaitoma pagal nutylėjimą",
-          description: "Didelis tekstas, stiprus kontrastas ir subalansuotas tarpas padeda pacientams stresinėse situacijose.",
-        },
-        motion: {
-          title: "Judesių sumažinimas",
-          description: "Gerbiamos sumažinto judesio nuostatos, kad sąsaja išliktų rami, kai reikia.",
-        },
-        language: {
-          title: "Parengta daugeliui kalbų",
-          description: "Pageidaujamos kalbos nustatymai ir žymos palengvina daugiakalbę plėtrą.",
-        },
-      },
-    },
-
-    digital: {
-      title: "Stebima priežiūra ir diagnostika",
-      lead: "Moderni įranga ir nuolatinis stebėjimas padeda komandoms priimti užtikrintus sprendimus.",
-      features: {
-        ePrescribing: {
-          title: "Elektroninis receptų išrašymas",
-          description: "Supaprastinkite receptus ir pratęsimus su paciento sutikimu ir audito įrašais.",
-        },
-        labIntegrations: {
-          title: "Laboratorijų integracijos",
-          description: "Gaunate rezultatus tiesiogiai į paciento įrašus ir automatiškai informuojate gydytojus.",
-        },
-        accessControls: {
-          title: "Prieigos valdymas",
-          description: "Smulkios vaidmenų teisės ir audito takai užtikrina atitiktį.",
-        },
-      },
-    },
-
-    contact: {
-      title: "Susisiekite su mumis",
-      desc: "Dėl įgyvendinimo arba palaikymo susisiekite, mes su jumis susisieksime.",
-    },
-    cta: {
-      title: "Reikalinga pagalba ar klausimų?",
-      desc: "Užsisakykite vizitą arba susisiekite su mūsų priežiūros komanda dėl pagalbos ir tolimesnių veiksmų.",
-      seePatientWorkflows: "Peržiūrėti paciento darbo eigas",
-      exploreClinicOperations: "Ištirti klinikos operacijas",
-    },
-  },
-
-  /* forms keys merged above */
 
   patient: {
     dashboard: {
@@ -298,55 +131,94 @@ const lt = {
         id: "ID",
         noSummary: "Nėra medicininės santraukos",
       },
-      actionCenter: {
-        title: "Veiksmų centras",
-        descriptionTasks: "Svarbūs veiksmai, kuriems vis dar reikia dėmesio",
-        descriptionEmpty: "Šiuo metu nėra skubių veiksmų",
-        openBadge: "{count} atidaryta",
-        takeAction: "Imtis veiksmo",
-        empty: "Jums nėra nei vieno neatlikto veiksmo. Patikrinkite žinutes arba dokumentus dėl naujinių.",
-      },
-      tasks: {
-        completeProfile: "Užbaikite savo profilį",
-        profileDetail: "{pct}% užbaigta",
-        addMedicalSummary: "Pridėkite medicininę santrauką",
-        medicalDetail: "Alergijos, būklės ir vaistai",
-      },
-      healthSnapshot: {
-        title: "Sveikatos apžvalga",
-        description: "Pagrindiniai skaitiniai, lengvai apžvelgiami",
-        prescriptions: "Aktyvūs receptai",
-        tests: "Tyrimų rezultatai",
-        messages: "Žinutės",
-        view: "Peržiūrėti",
-        empty: "Nėra aktyvių receptų, naujų tyrimų rezultatų arba neskaitytų žinučių.",
-      },
       nextAppointment: {
         title: "Kitas vizitas",
         noUpcoming: "Nėra artėjančių vizitų",
         bookVisit: "Užsirašyti vizitui",
+        viewAll: "Peržiūrėti visus",
         upcomingVisitLabel: "Artėjantis vizitas",
         viewDetails: "Peržiūrėti detales",
         reschedule: "Perplanuoti",
         empty: "Jūs neturite suplanuotų vizitų. Užsirašykite, kai būsite pasiruošę.",
       },
-      recentUpdates: {
-        title: "Naujausi atnaujinimai",
-        descriptionList: "Paskutiniai pakeitimai jūsų paskyroje",
-        noRecent: "Nėra naujausių atnaujinimų",
-        empty: "Nėra naujos veiklos. Patikrinkite savo įrašus arba žinutes dėl atnaujinimų.",
-      },
-      careTeam: {
-        title: "Priežiūros komanda",
-        description: "Pagrindinė klinika ir gydytojai",
+      appointmentCard: {
+        assignedClinician: "Paskirtas specialistas",
+        bookingReference: "Rezervacijos numeris",
+        patient: "Pacientas",
+        doctor: "Gydytojas",
+        clinicLocation: "Klinika / vieta",
+        when: "Kada",
+        status: "Būsena",
+        type: "Tipas",
+        mode: "Režimas",
+        reason: "Priežastis",
+        notes: "Pastabos",
+        bookedAt: "Rezervuota",
+        viewDetails: "Peržiūrėti išsamią informaciją",
+        printSave: "Spausdinti / Išsaugoti PDF",
+        noReasonProvided: "Priežastis nepateikta",
+        statusNames: {
+          pending: "Laukiama",
+          confirmed: "Patvirtinta",
+          completed: "Atlikta",
+          canceled: "Atšaukta",
+          rescheduled: "Perplanuota",
+        },
+        typeNames: {
+          "new-patient": "Naujas pacientas",
+          "follow-up": "Pakartotinis",
+          urgent: "Skubus",
+          wellness: "Profilaktinė",
+        },
+        modeNames: {
+          "in-person": "Gyvai",
+          telehealth: "Nuotolinis",
+        },
+        printErrorTitle: "Nepavyko atidaryti spausdinimo peržiūros",
+        printErrorMessage: "Nepavyko atidaryti spausdinimo peržiūros. Leiskite iššokančius langus ir bandykite dar kartą.",
       },
     },
-    notifications: {
-      emptyTitle: "Nėra pranešimų",
-      emptyBody:
-        "Šiuo metu nėra priežiūros naujienų. Svarbūs ligoninės atnaujinimai, vizitų pakeitimai ir laboratorijų įspėjimai bus čia matomi.",
-      recentTitle: "Naujausi atnaujinimai, kurie padeda sekti priežiūrą.",
+  },
+
+  booking: {
+    errors: {
+      chooseDoctor: "Pasirinkite gydytoją, kad tęstumėte.",
+      chooseAppointmentType: "Pasirinkite vizito tipą.",
+      selectMode: "Pasirinkite, kaip norite susitikti.",
+      chooseDate: "Pasirinkite datą.",
+      chooseTime: "Pasirinkite galimą laiką.",
+      reasonRequired: "Nurodykite trumpą vizito priežastį.",
     },
+    title: "Užsirašyti vizitui",
+    description: "Eikite per ramų, patikrintą užsakymo procesą su matoma santrauka nuo pradžios iki pabaigos.",
+    headerDescription: "Eikite per užsakymo veiksmus aiškiai matydami svarbias detales.",
+    labels: {
+      appointmentType: "Vizito tipas",
+      mode: "Vizito režimas",
+      preferredDate: "Pageidaujama data",
+      availableTimes: "Galimi laikai",
+      reasonForVisit: "Vizito priežastis",
+    },
+    hints: {
+      reason: "Pasidalinkite, ką gydytojas turėtų žinoti prieš vizitą.",
+    },
+  },
+
+  appointments: {
+    noAvailableSlots: "Nėra galimų laikų",
+    selectNewTime: "Pasirinkite naują laiką",
+    actions: {
+      reschedule: "Perplanuoti",
+      cancel: "Atšaukti vizitą",
+    },
+  },
+
+  errors: {
+    failedToLoadSlots: "Nepavyko užkrauti laikų",
+    network: "Tinklų klaida",
+    failedToLoadAvailability: "Nepavyko užkrauti prieinamumo",
+    unableToCreateAppointment: "Nepavyko sukurti vizito.",
+    unexpectedServer: "Netikėta serverio klaida.",
   },
 };
 
