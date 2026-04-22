@@ -53,17 +53,39 @@ export async function POST(req: Request) {
     const matched = allSlots.find((s) => new Date(s.startAt).toISOString() === requestedStartIso);
     if (!matched || !matched.isAvailable) return NextResponse.json({ error: "Selected slot is no longer available." }, { status: 409 });
 
-    // Derive current logged-in profile (if any)
+    // Derive current logged-in profile (if any). Be robust: the auth user id may not equal profiles.id.
     const serverSupabase = await createServerSupabaseClient();
     let loggedProfileId: string | null = null;
+    let sessionUserEmail: string | null = null;
     if (serverSupabase) {
-      const { data: authData } = await serverSupabase.auth.getUser();
-      const uid = authData?.user?.id ?? null;
-      if (uid) {
-        const { data: profile } = await serverSupabase.from("profiles").select("id").eq("auth_user_id", uid).maybeSingle();
-        if (profile?.id) {
-          loggedProfileId = profile.id;
+      try {
+        const { data: authData } = await serverSupabase.auth.getUser();
+        const uid = authData?.user?.id ?? null;
+        sessionUserEmail = authData?.user?.email ?? null;
+
+        if (uid) {
+          // 1) Try profiles.id == uid
+          const byId = await serverSupabase.from("profiles").select("id").eq("id", uid).maybeSingle();
+          if (byId?.data?.id) {
+            loggedProfileId = byId.data.id;
+          } else {
+            // 2) Try profiles.auth_user_id == uid
+            const byAuth = await serverSupabase.from("profiles").select("id").eq("auth_user_id", uid).maybeSingle();
+            if (byAuth?.data?.id) loggedProfileId = byAuth.data.id;
+            else if (sessionUserEmail) {
+              // 3) Fallback: match by email
+              const byEmail = await serverSupabase.from("profiles").select("id").eq("email", sessionUserEmail).maybeSingle();
+              if (byEmail?.data?.id) loggedProfileId = byEmail.data.id;
+            }
+          }
+        } else if (sessionUserEmail) {
+          // No uid available but we have an email
+          const byEmail = await serverSupabase.from("profiles").select("id").eq("email", sessionUserEmail).maybeSingle();
+          if (byEmail?.data?.id) loggedProfileId = byEmail.data.id;
         }
+      } catch (e) {
+        // best-effort: if resolution fails, continue as guest
+        console.warn("appointments/create: profile resolution failed", e);
       }
     }
 
@@ -263,10 +285,14 @@ export async function POST(req: Request) {
       starts_at: requestedStartIso,
       ends_at: endsAt,
     };
-    // Insert appointment. If reference column exists we included it; otherwise insertion proceeds without it.
+    // Insert appointment. Select list must be conditional on reference column presence to avoid DB errors.
+    const appointmentSelect = supportsReferenceColumn
+      ? "id, patient_id, doctor_id, clinic_id, appointment_type, mode, starts_at, ends_at, status, reason, reference"
+      : "id, patient_id, doctor_id, clinic_id, appointment_type, mode, starts_at, ends_at, status, reason";
+
     let apptData: any = null;
     try {
-      const { data, error } = await service.from("appointments").insert(apptRow).select("id, patient_id, doctor_id, clinic_id, appointment_type, mode, starts_at, ends_at, status, reason, reference").maybeSingle();
+      const { data, error } = await service.from("appointments").insert(apptRow).select(appointmentSelect).maybeSingle();
       if (error || !data) {
         console.error("appointment insert error", error);
         return NextResponse.json({ error: "Failed to create appointment." }, { status: 500 });

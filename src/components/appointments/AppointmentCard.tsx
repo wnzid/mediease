@@ -1,46 +1,246 @@
-import Link from "next/link";
+"use client";
+
+import { useCallback, useState } from "react";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { formatDate, formatTime } from "@/lib/formatting/date";
+import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
+import { Alert } from "@/components/ui/Alert";
+import { formatDate, formatTime, formatLongDate, formatDateTimeRange } from "@/lib/formatting/date";
 import type { Appointment } from "@/types/appointments";
 
 export function AppointmentCard({
   appointment,
-  href,
   doctor,
   clinic,
+  patientName,
 }: {
   appointment: Appointment;
-  href?: string;
   doctor?: { fullName?: string } | null;
   clinic?: { name?: string } | null;
+  patientName?: string | null;
 }) {
+  const [open, setOpen] = useState(false);
+  const [printError, setPrintError] = useState<string | null>(null);
+
+  const toggle = useCallback(() => setOpen((v) => !v), []);
+
+  const handlePrint = useCallback(() => {
+    setPrintError(null);
+
+    function escapeHtml(input?: string | null) {
+      if (!input) return "";
+      return String(input).replace(/[&<>\"']/g, (c) => {
+        switch (c) {
+          case "&":
+            return "&amp;";
+          case "<":
+            return "&lt;";
+          case ">":
+            return "&gt;";
+          case '"':
+            return "&quot;";
+          case "'":
+            return "&#39;";
+          default:
+            return c;
+        }
+      });
+    }
+
+    const patient = escapeHtml(patientName ?? "You");
+    const doctorName = escapeHtml(doctor?.fullName ?? "Assigned clinician");
+    const clinicName = escapeHtml(clinic?.name ?? "—");
+    const reference = escapeHtml(appointment.reference ?? "");
+    const reason = escapeHtml(appointment.reason ?? "");
+    const notes = escapeHtml(appointment.notes ?? "");
+    const created = appointment.createdAt ? `${escapeHtml(formatLongDate(appointment.createdAt))} ${escapeHtml(formatTime(appointment.createdAt))}` : "";
+
+    const title = `MediEase — Appointment${reference ? ` • ${reference}` : ""}`;
+    const html = `<!doctype html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${title}</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style>
+          :root{color-scheme: light}
+          html,body{height:100%}
+          body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0f172a;padding:28px;background:#fff}
+          header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+          .brand{font-weight:700;font-size:20px;color:#062b57}
+          .muted{color:#475569}
+          .section{margin:12px 0;padding:6px 0}
+          .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9}
+          .label{font-weight:600;color:#0f172a;width:40%}
+          .value{width:60%;text-align:right}
+          h2{font-size:14px;margin:8px 0}
+          @media print{body{padding:12px} .no-print{display:none}}
+        </style>
+      </head>
+      <body>
+        <header>
+          <div class="brand">MediEase</div>
+          <div class="muted">Appointment Details</div>
+        </header>
+
+        <main>
+          <div class="section">
+            <div class="row"><div class="label">Booking reference</div><div class="value">${reference || "—"}</div></div>
+            <div class="row"><div class="label">Patient</div><div class="value">${patient}</div></div>
+            <div class="row"><div class="label">Doctor</div><div class="value">${doctorName}</div></div>
+            <div class="row"><div class="label">Clinic / Location</div><div class="value">${clinicName}</div></div>
+            <div class="row"><div class="label">When</div><div class="value">${escapeHtml(formatDateTimeRange(appointment.startsAt, appointment.endsAt))}</div></div>
+            <div class="row"><div class="label">Status</div><div class="value">${escapeHtml(appointment.status)}</div></div>
+            <div class="row"><div class="label">Type</div><div class="value">${escapeHtml(appointment.appointmentType)}</div></div>
+            <div class="row"><div class="label">Mode</div><div class="value">${escapeHtml(appointment.mode)}</div></div>
+          </div>
+
+          <div class="section">
+            <h2>Reason</h2>
+            <div class="muted">${reason || "—"}</div>
+          </div>
+
+          ${notes ? `<div class="section"><h2>Notes</h2><div class="muted">${notes}</div></div>` : ""}
+
+          ${created ? `<div class="section"><div class="row"><div class="label">Booked at</div><div class="value">${created}</div></div></div>` : ""}
+
+        </main>
+        <script>
+          (function(){
+            try{ window.focus(); window.print(); }catch(e){/* noop */}
+          })();
+        </script>
+      </body>
+      </html>`;
+
+    // Try opening a new window first (user gesture). If blocked, fallback to an iframe print.
+    try {
+      const w = window.open("", "_blank", "width=800,height=600");
+      if (w) {
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+        const doPrint = () => {
+          try {
+            w.focus();
+            w.print();
+          } catch (e) {
+            setPrintError("Unable to open print view. Please allow popups and try again.");
+          }
+        };
+        if (w.document.readyState === "complete") doPrint();
+        else w.addEventListener("load", doPrint);
+        // Close after print if the browser supports afterprint
+        try { w.addEventListener("afterprint", () => { try { w.close(); } catch{} }); } catch {}
+        return;
+      }
+    } catch (e) {
+      // ignore and try iframe fallback
+    }
+
+    // Fallback: hidden iframe print (avoids popup blocker issues in some browsers)
+    try {
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.right = "0";
+      iframe.style.bottom = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.border = "0";
+      document.body.appendChild(iframe);
+      const idoc = iframe.contentWindow?.document;
+      if (!idoc) throw new Error("print-unavailable");
+      idoc.open();
+      idoc.write(html);
+      idoc.close();
+      const win = iframe.contentWindow!;
+      try {
+        win.focus();
+        win.print();
+      } catch (err) {
+        setPrintError("Unable to open print view. Please allow popups and try again.");
+      }
+      setTimeout(() => {
+        try { document.body.removeChild(iframe); } catch {}
+      }, 2000);
+    } catch (err) {
+      setPrintError("Unable to open print view. Please allow popups and try again.");
+    }
+  }, [appointment, clinic?.name, doctor?.fullName, patientName]);
+
   return (
-    <Card>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-brand-700)]">{appointment.mode}</p>
-          <h2 className="mt-2 text-xl font-semibold text-[var(--color-ink-950)]">
-            {doctor?.fullName ?? "Assigned clinician"}
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--color-ink-600)]">
-            {formatDate(appointment.startsAt)} at {formatTime(appointment.startsAt)} / {clinic?.name}
-          </p>
-          {appointment.reference ? (
-            <p className="mt-1 text-xs text-[var(--color-ink-600)]">Ref: {appointment.reference}</p>
-          ) : null}
+    <Card className="p-3">
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-[var(--color-ink-950)]">{doctor?.fullName ?? "Assigned clinician"}</h3>
+              <div className="mt-1 text-xs text-[var(--color-ink-600)]">
+                {formatDate(appointment.startsAt)} · {formatTime(appointment.startsAt)} · {clinic?.name ?? "—"}
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <StatusBadge status={appointment.status} />
+            </div>
+          </div>
+
+          <div className="mt-2 flex items-center gap-2">
+            <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{appointment.appointmentType}</Badge>
+            <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)] text-[11px]">{appointment.mode}</Badge>
+            <p className="ml-2 text-sm text-[var(--color-ink-700)] truncate max-w-[48ch]">{appointment.reason ?? "No reason provided"}</p>
+          </div>
         </div>
-        <StatusBadge status={appointment.status} />
+
+        <div className="flex flex-col items-end gap-2">
+          <Button variant="ghost" size="sm" onClick={toggle} iconRight={open ? "chevron-right" : "chevron-right"} className="px-3">
+            {open ? "Hide" : "View details"}
+          </Button>
+        </div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)]">{appointment.appointmentType}</Badge>
-        <Badge className="bg-[var(--color-panel-muted)] text-[var(--color-ink-700)]">{appointment.mode}</Badge>
-      </div>
-      <p className="mt-4 text-sm leading-6 text-[var(--color-ink-700)]">{appointment.reason}</p>
-      {href ? (
-        <Link href={href} className="mt-5 inline-flex text-sm font-semibold text-[var(--color-brand-700)]">
-          Review details
-        </Link>
+
+      {open ? (
+        <div className="mt-3 border-t border-[var(--color-panel-border)] pt-3">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Reference</p>
+              <p className="mt-1 text-[var(--color-ink-800)]">{appointment.reference ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Status</p>
+              <p className="mt-1 text-[var(--color-ink-800)]">{appointment.status}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">When</p>
+              <p className="mt-1 text-[var(--color-ink-800)]">{formatDateTimeRange(appointment.startsAt, appointment.endsAt)}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Mode</p>
+              <p className="mt-1 text-[var(--color-ink-800)]">{appointment.mode}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Reason</p>
+              <p className="mt-1 text-[var(--color-ink-700)]">{appointment.reason ?? "—"}</p>
+            </div>
+            {appointment.notes ? (
+              <div className="col-span-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-600)]">Notes</p>
+                <p className="mt-1 text-[var(--color-ink-700)]">{appointment.notes}</p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="mt-3 flex gap-2">
+            <Button variant="outline" size="sm" onClick={handlePrint} iconLeft="file-text">
+              Print / Save PDF
+            </Button>
+            {printError ? (
+              <div className="w-full mt-2">
+                <Alert tone="warning" title="Unable to open print view" description={printError} />
+              </div>
+            ) : null}
+          </div>
+        </div>
       ) : null}
     </Card>
   );
