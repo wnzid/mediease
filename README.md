@@ -7,6 +7,8 @@
 
 </div>
 
+> Archived locally on 15 November 2026. Source and architecture are preserved; dependencies, caches and local editor files were removed. See [archive notes](docs/ARCHIVE.md).
+
 MediEase combines a public hospital website, patient self-service, and internal workspaces for doctors, staff, and administrators. It was developed as a Human–Computer Interaction project, with particular attention to information architecture, feedback, readable interfaces, and task continuity.
 
 ## What is implemented
